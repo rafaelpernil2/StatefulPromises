@@ -3,3 +3,5 @@ export const PROMISE_STATUS = {
   FULFILLED: 'f',
   REJECTED: 'r'
 };
+
+export const ALREADY_FULFILLED = undefined;

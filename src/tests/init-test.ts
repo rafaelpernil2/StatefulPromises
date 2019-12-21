@@ -23,7 +23,8 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
         name: 'CreateSomething',
         function: PromiseUtil.buildFixedTimePromise(10),
         thisArg: undefined,
-        args: [{ result: 'Result' }, { result2: 'Result' }]
+        args: [{ result: 'Result' }, { result2: 'Result' }],
+        cacheResult: true
       },
       {
         name: 'DeleteSomething',
@@ -60,7 +61,8 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       },
       {
         name: 'UpdateSomething',
-        function: PromiseUtil.buildFixedTimePromise(100)
+        function: PromiseUtil.buildFixedTimePromise(100),
+        cacheResult: true
       },
       {
         name: 'ExternalAPI1',
@@ -82,23 +84,28 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       },
       {
         name: 'ExternalAPI2',
-        function: PromiseUtil.buildFixedTimePromise(100)
+        function: PromiseUtil.buildFixedTimePromise(100),
+        cacheResult: true
       },
       {
         name: 'LoadJSON',
-        function: PromiseUtil.buildFixedTimePromise(10)
+        function: PromiseUtil.buildFixedTimePromise(10),
+        cacheResult: true
       },
       {
         name: 'LoadAuthCookie',
-        function: PromiseUtil.buildFixedTimePromise(10)
+        function: PromiseUtil.buildFixedTimePromise(10),
+        cacheResult: true
       },
       {
         name: 'LoadExternalLibraries',
-        function: PromiseUtil.buildFixedTimePromise(10)
+        function: PromiseUtil.buildFixedTimePromise(10),
+        cacheResult: true
       },
       {
         name: 'SendLog',
-        function: PromiseUtil.buildFixedTimePromise(10)
+        function: PromiseUtil.buildFixedTimePromise(10),
+        cacheResult: true
       }
     ];
     // promiseBatch.add(listOfPromises[0]);

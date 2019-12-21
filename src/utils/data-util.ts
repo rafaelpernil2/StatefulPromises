@@ -1,6 +1,6 @@
 import ko from 'knockout';
 import { PromiseBatchStatus } from '../app/promise-batch-status';
-import { PROMISE_STATUS } from '../constants/global-constants';
+import { ALREADY_FULFILLED, PROMISE_STATUS } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 export class DataUtil {
@@ -41,7 +41,7 @@ export class DataUtil {
   public static buildStatefulPromise = async <T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> => {
     // Return cached value if chosen
     if (promiseStatus.observeStatus(customPromise.name) === PROMISE_STATUS.FULFILLED) {
-      const response = customPromise?.cacheResult ? promiseStatus.getCachedResponse(customPromise.name) : ({} as T);
+      const response = customPromise?.cacheResult ? promiseStatus.getCachedResponse(customPromise.name) : ALREADY_FULFILLED;
       return Promise.resolve(response);
     }
 
@@ -68,14 +68,16 @@ export class DataUtil {
         }
 
         promiseStatus.updateStatus(customPromise.name, doneData.status);
-        if (customPromise?.cacheResult) {
-          promiseStatus.addCachedResponse(customPromise.name, doneData.response);
-        }
+
         // Make sure the done callback notification happens after it is finished
         const doneCallbackRes = customPromise.doneCallback ? customPromise.doneCallback(doneData.response) : undefined;
         if (doneCallbackRes) {
           doneData.response = doneCallbackRes;
           promiseStatus.notifyAsFinished(customPromise.name);
+        }
+        // Cache data
+        if (customPromise?.cacheResult) {
+          promiseStatus.addCachedResponse(customPromise.name, doneData.response);
         }
         return doneData.response as T;
       },
@@ -92,7 +94,6 @@ export class DataUtil {
           catchData.response = error;
         }
 
-        console.log(catchData);
         return catchData.response as T;
       }
     );

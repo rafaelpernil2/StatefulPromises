@@ -10,7 +10,7 @@
         "prettier": true,
         "object-literal-sort-keys": false,
         "no-any": true,
-        "no-console": false,
+        "no-console": true,
         "max-line-length": [
             true,
             180
