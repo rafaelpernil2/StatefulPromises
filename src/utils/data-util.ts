@@ -1,8 +1,8 @@
 import ko from 'knockout';
+import { PromiseBatchStatus } from '../app/promise-batch-status';
 import { PROMISE_STATUS } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
-import { PromiseBatchStatus } from './promise-batch-status';
 export class DataUtil {
   public static isPromiseBatchCompleted = (promiseStatusObj: PromiseBatchStatus): Promise<boolean> => {
     // Initial check

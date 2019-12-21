@@ -1,6 +1,6 @@
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise, ICustomPromise as object } from '../interfaces/i-custom-promise';
-import { DataUtil } from './data-util';
+import { DataUtil } from '../utils/data-util';
 import { PromiseBatchStatus } from './promise-batch-status';
 
 export class PromiseBatch {
