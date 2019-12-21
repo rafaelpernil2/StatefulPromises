@@ -4,4 +4,4 @@ export const PROMISE_STATUS = {
   REJECTED: 'r'
 };
 
-export const ALREADY_FULFILLED = undefined;
+export const NO_CACHE = undefined;

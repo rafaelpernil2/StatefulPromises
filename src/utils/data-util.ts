@@ -1,6 +1,6 @@
 import ko from 'knockout';
 import { PromiseBatchStatus } from '../app/promise-batch-status';
-import { ALREADY_FULFILLED, PROMISE_STATUS } from '../constants/global-constants';
+import { NO_CACHE, PROMISE_STATUS } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 export class DataUtil {
@@ -41,7 +41,7 @@ export class DataUtil {
   public static buildStatefulPromise = async <T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> => {
     // Return cached value if chosen
     if (promiseStatus.observeStatus(customPromise.name) === PROMISE_STATUS.FULFILLED) {
-      const response = customPromise?.cacheResult ? promiseStatus.getCachedResponse(customPromise.name) : ALREADY_FULFILLED;
+      const response = customPromise?.disableCache ? NO_CACHE : promiseStatus.getCachedResponse(customPromise.name);
       return Promise.resolve(response);
     }
 
@@ -76,7 +76,7 @@ export class DataUtil {
           promiseStatus.notifyAsFinished(customPromise.name);
         }
         // Cache data
-        if (customPromise?.cacheResult) {
+        if (!customPromise?.disableCache) {
           promiseStatus.addCachedResponse(customPromise.name, doneData.response);
         }
         return doneData.response as T;

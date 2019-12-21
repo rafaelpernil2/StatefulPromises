@@ -23,8 +23,7 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
         name: 'CreateSomething',
         function: PromiseUtil.buildFixedTimePromise(10),
         thisArg: undefined,
-        args: [{ result: 'Result' }, { result2: 'Result' }],
-        cacheResult: true
+        args: [{ result: 'Result' }, { result2: 'Result' }]
       },
       {
         name: 'DeleteSomething',
@@ -38,8 +37,7 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
           error += 'MODIFIED';
           return error;
         },
-        args: ['something'],
-        cacheResult: true
+        args: ['something']
       },
       {
         name: 'AddElement',
@@ -56,13 +54,11 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
           error += 'MODIFIED';
           return error;
         },
-        args: [[1, 2, 3]],
-        cacheResult: true
+        args: [[1, 2, 3]]
       },
       {
         name: 'UpdateSomething',
-        function: PromiseUtil.buildFixedTimePromise(100),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(100)
       },
       {
         name: 'ExternalAPI1',
@@ -79,41 +75,38 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
           error += 'MODIFIED';
           return error;
         },
-        args: [1],
-        cacheResult: true
+        args: [1]
       },
       {
         name: 'ExternalAPI2',
-        function: PromiseUtil.buildFixedTimePromise(100),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(100)
       },
       {
         name: 'LoadJSON',
-        function: PromiseUtil.buildFixedTimePromise(10),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(10)
       },
       {
         name: 'LoadAuthCookie',
-        function: PromiseUtil.buildFixedTimePromise(10),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(10)
       },
       {
         name: 'LoadExternalLibraries',
-        function: PromiseUtil.buildFixedTimePromise(10),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(10)
       },
       {
         name: 'SendLog',
-        function: PromiseUtil.buildFixedTimePromise(10),
-        cacheResult: true
+        function: PromiseUtil.buildFixedTimePromise(10)
       }
     ];
     // promiseBatch.add(listOfPromises[0]);
     promiseBatch.addList(listOfPromises);
+    // const a = promiseBatch.build(listOfPromises[0]);
 
     const call = promiseBatch.promiseAll(concurrentLimit);
     promiseBatch.finishAllPromises();
     const result = await call;
+
+    // console.log(result);
 
     const expectedResult = {
       GetSomething: [{ result: 'Result' }],
@@ -128,6 +121,10 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       ExternalAPI1: 2,
       SendLog: PromiseUtil.NO_INPUT_PROVIDED
     };
+
+    // const call2 = promiseBatch.promiseAll(concurrentLimit);
+    // promiseBatch.finishAllPromises();
+    // const result2 = await call2;
 
     expect(result).to.eql(expectedResult);
   });

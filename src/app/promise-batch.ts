@@ -27,6 +27,7 @@ export class PromiseBatch {
 
   public build<T>(nameOrCustomPromise: string | ICustomPromise<T>): PromiseLike<T> {
     const customPromise = typeof nameOrCustomPromise === 'string' ? this.customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
+    this.add(customPromise);
     return DataUtil.buildStatefulPromise<T>(customPromise, this.statusObject);
   }
 
