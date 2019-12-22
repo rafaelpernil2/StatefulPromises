@@ -1,4 +1,4 @@
-import { NO_RESULT } from './constants/global-constants';
+import { ERROR_MSG } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { PromiseBatchStatus } from './promise-batch-status';
@@ -8,6 +8,7 @@ export class PromiseBatch {
   public statusObject: PromiseBatchStatus;
   public customPromiseList: IAnyObject;
   public batchResponse: IAnyObject;
+
   constructor(statusObject?: PromiseBatchStatus) {
     this.statusObject = statusObject ?? new PromiseBatchStatus();
     this.customPromiseList = {} as IAnyObject;
@@ -20,7 +21,6 @@ export class PromiseBatch {
     }
   }
 
-  // This is untyped because each function could return a different type
   public addList(customPromiseList: Array<ICustomPromise<unknown>>) {
     customPromiseList.forEach(promise => {
       this.customPromiseList[promise.name] = promise;
@@ -39,7 +39,7 @@ export class PromiseBatch {
       if (await this.isFulfilled()) {
         resolve(this.getBatchResponse());
       } else {
-        reject('Some promise failed');
+        reject(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
       }
     });
   }
@@ -50,9 +50,15 @@ export class PromiseBatch {
       if (await this.isCompleted()) {
         resolve(this.getBatchResponse());
       } else {
-        reject('Some promise is still running. You should not be seeing this');
+        reject(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
       }
     });
+  }
+
+  public retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
+    this.filterFulfilledPromises();
+    this.statusObject.resetFailedPromises();
+    return this.promiseAll(concurrentLimit);
   }
 
   public getBatchResponse(): IAnyObject {
@@ -117,19 +123,15 @@ export class PromiseBatch {
   }
 
   private concurrentPromiseExecRec = async <T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> => {
-    let promise;
     let result = {} as Promise<IAnyObject> | IAnyObject;
     const awaitingPromiseList = promiseNameList;
 
     if (!customPromise || !customPromise.function) {
-      throw new Error('Cannot read function of promise');
+      throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
 
-    // Call the builder
-    promise = this.build<T>(customPromise);
-
-    // Wait until promise ends
-    const promiseResult = await promise;
+    // Call the builder and wait until promise ends
+    const promiseResult = await this.promiseTryCatch(customPromise);
 
     // Add property to batchResponse if the property does not exist or if the result was cached
     if (!this.batchResponse.hasOwnProperty(customPromise.name) || !customPromise.lazyMode) {
@@ -151,4 +153,22 @@ export class PromiseBatch {
 
     return result;
   };
+
+  private async promiseTryCatch<T>(customPromise: ICustomPromise<T>) {
+    try {
+      return await this.build<T>(customPromise);
+    } catch (error) {
+      // Even if the promise is rejected, we save the error value;
+      return error;
+    }
+  }
+
+  private filterFulfilledPromises() {
+    const failedList = this.statusObject.getFailedPromisesList();
+    Object.keys(this.customPromiseList).forEach(promiseName => {
+      if (!failedList.includes(promiseName)) {
+        delete this.customPromiseList[promiseName];
+      }
+    });
+  }
 }

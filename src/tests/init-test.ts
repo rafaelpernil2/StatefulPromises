@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import ko from 'knockout';
 import 'mocha';
 import { PromiseBatch } from '../index';
 import { PromiseBatchStatus } from '../index';
@@ -28,23 +29,25 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       },
       {
         name: 'DeleteSomething',
-        function: PromiseUtil.buildFixedTimePromise(1000),
-        validate: PromiseUtil.dummyValidator,
+        function: PromiseUtil.buildSingleParamFixedTimePromise<string>(1000),
+        validate: data => {
+          return data === 'something';
+        },
         doneCallback: (data: string) => {
           data += 'g';
           return data;
         },
         catchCallback: (error: string) => {
-          error += 'MODIFIED';
+          error += 'g';
           return error;
         },
-        args: ['something']
+        args: ['somethin']
       },
       {
         name: 'AddElement',
         function: PromiseUtil.buildFixedTimePromise(1000),
         validate: (data: IAnyObject[]) => {
-          return !!data;
+          return JSON.stringify(data) === JSON.stringify([[1, 2, 3]]);
         },
         doneCallback: (data: IAnyObject[]) => {
           data[0].pop();
@@ -55,7 +58,7 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
           error += 'MODIFIED';
           return error;
         },
-        args: [[1, 2, 3]]
+        args: [[1, 2]]
       },
       {
         name: 'UpdateSomething',
@@ -100,47 +103,66 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       }
     ];
 
-    const getSomething: ICustomPromise<object[]> = {
-      name: 'GetSomething',
-      function: PromiseUtil.buildFixedTimePromise(100),
-      thisArg: undefined,
-      validate: data => {
-        // console.log('VALID', data);
-        return false;
-      },
-      doneCallback: data => {
-        const res = ((data[0] as IAnyObject).result += 'd');
-        return [{ result: res }];
-      },
-      catchCallback: reason => {
-        const res = ((reason[0] as IAnyObject).result += 'c');
-        return [{ result: res }];
-      },
-      args: [{ result: 'Result' }],
-      lazyMode: true
-    };
+    // const getSomething: ICustomPromise<object[]> = {
+    //   name: 'GetSomething',
+    //   function: PromiseUtil.buildFixedTimePromise(100),
+    //   thisArg: undefined,
+    //   validate: data => {
+    //     // console.log('VALID', data);
+    //     return false;
+    //   },
+    //   doneCallback: data => {
+    //     const res = ((data[0] as IAnyObject).result += 'd');
+    //     return [{ result: res }];
+    //   },
+    //   catchCallback: reason => {
+    //     const res = ((reason[0] as IAnyObject).result += 'c');
+    //     return [{ result: res }];
+    //   },
+    //   args: [{ result: 'Result' }],
+    //   lazyMode: true
+    // };
 
-    const pb = new PromiseBatch(new PromiseBatchStatus());
+    // const pb = new PromiseBatch(new PromiseBatchStatus());
 
-    pb.build(getSomething).then(
-      response => {
-        // console.log('FIRST RESPONSE', response);
-        pb.finishPromise('GetSomething');
-        pb.build(getSomething).then(secondRes => {
-          // console.log('SECOND RESPONSE', secondRes);
-          pb.finishPromise('GetSomething');
-        });
-      },
-      reason => {
-        // console.log('ERROR', reason);
-      }
-    );
+    // pb.build(getSomething).then(
+    //   response => {
+    //     // console.log('FIRST RESPONSE', response);
+    //     pb.finishPromise('GetSomething');
+    //     pb.build(getSomething).then(secondRes => {
+    //       // console.log('SECOND RESPONSE', secondRes);
+    //       pb.finishPromise('GetSomething');
+    //     });
+    //   },
+    //   reason => {
+    //     // console.log('ERROR', reason);
+    //   }
+    // );
 
     promiseBatch.addList(listOfPromises);
+    const call = promiseBatch.promiseAll(concurrentLimit).catch(reason => {
+      // console.log('ERROR', reason);
+    });
 
-    const call = promiseBatch.promiseAll(concurrentLimit);
     promiseBatch.finishAllPromises();
     const result = await call;
+    // Fix DeleteSomething bad execution by modifying its arguments
+    if (Array.isArray(listOfPromises[2].args)) {
+      listOfPromises[2].args[0] += 'g';
+    }
+
+    let retry = await promiseBatch.retryFailed(5).catch(reason => {
+      // console.log('RETRY ERROR 1', reason);
+    });
+
+    // Fix AddElement bad execution by modifying its arguments
+    if (Array.isArray(listOfPromises[3].args)) {
+      listOfPromises[3].args[0].push(3);
+    }
+
+    retry = await promiseBatch.retryFailed(5).catch(reason => {
+      // console.log('RETRY ERROR 2', reason);
+    });
 
     const expectedResult = {
       GetSomething: [{ result: 'Result' }],
@@ -156,11 +178,13 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       SendLog: PromiseUtil.NO_INPUT_PROVIDED
     };
 
-    const call2 = promiseBatch.promiseAll(concurrentLimit);
-    promiseBatch.finishAllPromises();
-    const result2 = await call2;
+    // const call2 = promiseBatch.promiseAll(concurrentLimit).catch(reason => {
+    //   console.log('ERROR', reason);
+    // });
+    // promiseBatch.finishAllPromises();
+    // const result2 = await call2;
 
-    expect(result2).to.eql(expectedResult);
+    expect(retry).to.eql(expectedResult);
   });
 });
 

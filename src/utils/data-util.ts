@@ -4,18 +4,18 @@ import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatchStatus } from '../promise-batch-status';
 export class DataUtil {
-  public static isPromiseBatchCompleted = (promiseStatusObj: PromiseBatchStatus): Promise<boolean> => {
+  public static isPromiseBatchCompleted = (batchStatus: PromiseBatchStatus): Promise<boolean> => {
     // Initial check
-    const arePromisesCompleted = Object.values(promiseStatusObj.getStatusList()).every((value: ko.Observable<string>) => {
+    const arePromisesCompleted = Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {
       return value() === PROMISE_STATUS.FULFILLED || value() === PROMISE_STATUS.REJECTED;
     });
     const promisesFinished = ko.pureComputed(() => {
-      return Object.values(promiseStatusObj.getStatusList()).every((value: ko.Observable<string>) => {
+      return Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {
         return value() !== PROMISE_STATUS.PENDING;
       });
     });
 
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<boolean>(resolve => {
       if (arePromisesCompleted) {
         resolve(true);
       } else {
@@ -28,11 +28,11 @@ export class DataUtil {
     });
   };
 
-  public static isPromiseBatchFulfilled = async (promiseStatusObj: PromiseBatchStatus) => {
+  public static isPromiseBatchFulfilled = async (batchStatus: PromiseBatchStatus) => {
     // First make sure all promises are completed
-    await DataUtil.isPromiseBatchCompleted(promiseStatusObj);
+    await DataUtil.isPromiseBatchCompleted(batchStatus);
     // Then, check if they are fulfilled
-    return Object.values(promiseStatusObj.getStatusList()).every((value: ko.Observable<string>) => {
+    return Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {
       return value() === PROMISE_STATUS.FULFILLED;
     });
   };
@@ -45,41 +45,31 @@ export class DataUtil {
     }
 
     const args = customPromise && customPromise.args ? customPromise.args : [];
-    // Initialize status as pending
+
+    // Initialize status as pending if it wasn't created before.
+    // .initStatus takes care of that
     promiseStatus.initStatus(customPromise.name);
 
     return new Promise<T>((resolve, reject) => {
       customPromise.function.call(customPromise.thisArg, ...args).then(
         (response: T) => {
           // Save the response
-          const doneData = {} as IAnyObject;
-          doneData.response = response;
+          const doneData: IAnyObject = {
+            response
+          };
           // Validate response if a validator was provided
-          if (customPromise.validate) {
-            // If the variable is an object, it must be cloned to avoid modifications
-            let clonedResponse = response;
-            if (typeof response === 'object') {
-              clonedResponse = JSON.parse(JSON.stringify(response));
-            }
-            const isValid = customPromise.validate(clonedResponse);
-            doneData.status = isValid ? PROMISE_STATUS.FULFILLED : PROMISE_STATUS.REJECTED;
-          } else {
-            doneData.status = PROMISE_STATUS.FULFILLED;
-          }
+          DataUtil.execValidateIfProvided(customPromise, promiseStatus, doneData);
 
-          promiseStatus.updateStatus(customPromise.name, doneData.status);
+          // Execute done or catch callback depending on the status in doneData
+          DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, doneData);
 
-          // Make sure the done callback notification happens after it is finished
-          const doneCallbackRes = customPromise.doneCallback ? customPromise.doneCallback(doneData.response) : undefined;
-          if (doneCallbackRes) {
-            doneData.response = doneCallbackRes;
-            promiseStatus.notifyAsFinished(customPromise.name);
-          }
-          // Cache data
+          // If lazy mode is disabled, it should cache the response after done callback.
+          // Lazy mode means -> no return value the next time
+          // It does not matter if the data is validated or not, you can do whatever you want with it
           if (!customPromise?.lazyMode) {
             promiseStatus.addCachedResponse(customPromise.name, doneData.response);
           }
-
+          // If fulfilled...
           if (doneData.status === PROMISE_STATUS.FULFILLED) {
             resolve(doneData.response);
           } else {
@@ -87,20 +77,45 @@ export class DataUtil {
           }
         },
         (error: unknown) => {
-          promiseStatus.updateStatus(customPromise.name, PROMISE_STATUS.REJECTED);
-
-          const catchCallbackRes = customPromise.catchCallback ? customPromise.catchCallback(error) : undefined;
-          const catchData = {} as IAnyObject;
-          if (catchCallbackRes) {
-            catchData.response = catchCallbackRes;
-            promiseStatus.notifyAsFinished(customPromise.name);
-          } else {
-            catchData.response = error;
-          }
-
-          return reject(catchData.response);
+          const catchData: IAnyObject = {
+            status: PROMISE_STATUS.REJECTED,
+            response: error
+          };
+          DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, catchData);
+          reject(catchData.response);
         }
       );
     });
   };
+
+  private static execDoneOrCatchCallback<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
+    switch (data.status) {
+      case PROMISE_STATUS.FULFILLED:
+        data.response = customPromise.doneCallback ? customPromise.doneCallback(data.response) : data.response;
+        break;
+      case PROMISE_STATUS.REJECTED:
+        data.response = customPromise.catchCallback ? customPromise.catchCallback(data.response) : data.response;
+        break;
+      default:
+        break;
+    }
+    promiseStatus.updateStatus(customPromise.name, data.status);
+    promiseStatus.notifyAsFinished(customPromise.name);
+  }
+
+  private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, doneData: IAnyObject) {
+    // Validate response if a validator was provided
+    if (customPromise.validate) {
+      // If the variable is an object, it must be cloned to avoid modifications
+      let clonedResponse = doneData.response;
+      if (typeof doneData.response === 'object') {
+        clonedResponse = JSON.parse(JSON.stringify(doneData.response));
+      }
+      // If valid, the status is fulfilled, else it is rejected
+      const isValid = customPromise.validate(clonedResponse);
+      doneData.status = isValid ? PROMISE_STATUS.FULFILLED : PROMISE_STATUS.REJECTED;
+    } else {
+      doneData.status = PROMISE_STATUS.FULFILLED;
+    }
+  }
 }

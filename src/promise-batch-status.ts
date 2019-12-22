@@ -1,11 +1,12 @@
 import ko from 'knockout';
-import { PROMISE_STATUS } from './constants/global-constants';
+import { ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 
 type PromiseStatus = typeof PROMISE_STATUS[keyof typeof PROMISE_STATUS];
 
 export class PromiseBatchStatus {
   private statusObj: IAnyObject;
+
   constructor() {
     this.statusObj = {
       Status: {},
@@ -15,9 +16,13 @@ export class PromiseBatchStatus {
 
   public initStatus(key: string) {
     if (!this.statusObj.Status[key] || !this.statusObj.Status[`${key}AfterCallback`]) {
-      this.statusObj.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
-      this.statusObj.Status[`${key}AfterCallback`] = ko.observable(PROMISE_STATUS.PENDING);
+      this.resetStatus(key);
     }
+  }
+
+  public resetStatus(key: string) {
+    this.statusObj.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
+    this.statusObj.Status[`${key}AfterCallback`] = ko.observable(PROMISE_STATUS.PENDING);
   }
 
   public updateStatus(key: string, status: PromiseStatus) {
@@ -33,7 +38,7 @@ export class PromiseBatchStatus {
   }
 
   public getCachedResponse(key: string) {
-    return this.statusObj.Cache[key] ?? 'You should not be seeing this';
+    return this.statusObj.Cache[key] ?? ERROR_MSG.NO_CACHED_VALUE;
   }
 
   public addCachedResponse<T>(key: string, data: T) {
@@ -46,6 +51,22 @@ export class PromiseBatchStatus {
 
   public getCacheList(): IAnyObject {
     return this.statusObj.Cache;
+  }
+
+  public getFailedPromisesList(): string[] {
+    const failedList: string[] = [];
+    Object.keys(this.statusObj.Status).forEach(key => {
+      if (this.observeStatus(key) === PROMISE_STATUS.REJECTED) {
+        failedList.push(key);
+      }
+    });
+    return failedList;
+  }
+
+  public resetFailedPromises() {
+    this.getFailedPromisesList().forEach(promiseName => {
+      this.resetStatus(promiseName);
+    });
   }
 
   public notifyAsFinished(key: string) {
