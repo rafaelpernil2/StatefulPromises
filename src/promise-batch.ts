@@ -21,7 +21,6 @@ export class PromiseBatch {
   }
 
   // This is untyped because each function could return a different type
-  // tslint:disable-next-line: no-any
   public addList(customPromiseList: Array<ICustomPromise<unknown>>) {
     customPromiseList.forEach(promise => {
       this.customPromiseList[promise.name] = promise;
@@ -107,8 +106,7 @@ export class PromiseBatch {
     // Initialization of promises
     for (let index = 0; index < execLimit; index++) {
       const promise = this.customPromiseList[promiseList[index]];
-      // tslint:disable-next-line: no-any
-      promisesInProgress.push(this.concurrentPromiseExecRec<any>(promise, awaitingPromises));
+      promisesInProgress.push(this.concurrentPromiseExecRec<unknown>(promise, awaitingPromises));
     }
 
     // Await promises

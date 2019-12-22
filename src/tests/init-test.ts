@@ -12,7 +12,7 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
     const batchStatus = new PromiseBatchStatus();
     const promiseBatch = new PromiseBatch(batchStatus);
 
-    const listOfPromises = [
+    const listOfPromises: Array<ICustomPromise<unknown>> = [
       {
         name: 'GetSomething',
         function: PromiseUtil.buildFixedTimePromise(10),
@@ -100,27 +100,43 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       }
     ];
 
-    // const getSomething = {
-    //   name: 'GetSomething',
-    //   function: PromiseUtil.buildFixedTimePromise(10000),
-    //   thisArg: undefined,
-    //   args: [{ result: 'Result' }],
-    //   disableCache: false
-    // };
+    const getSomething: ICustomPromise<object[]> = {
+      name: 'GetSomething',
+      function: PromiseUtil.buildFixedTimePromise(100),
+      thisArg: undefined,
+      validate: data => {
+        // console.log('VALID', data);
+        return false;
+      },
+      doneCallback: data => {
+        const res = ((data[0] as IAnyObject).result += 'd');
+        return [{ result: res }];
+      },
+      catchCallback: reason => {
+        const res = ((reason[0] as IAnyObject).result += 'c');
+        return [{ result: res }];
+      },
+      args: [{ result: 'Result' }],
+      lazyMode: true
+    };
 
-    // const pb = new PromiseBatch(new PromiseBatchStatus());
+    const pb = new PromiseBatch(new PromiseBatchStatus());
 
-    // pb.build(listOfPromises[0]).then(response => {
-    //   // console.log('FIRST RESPONSE', response);
-    //   pb.finishPromise('GetSomething');
-    //   pb.build(listOfPromises[0]).then(secondRes => {
-    //     // console.log('SECOND RESPONSE', secondRes);
-    //     pb.finishPromise('GetSomething');
-    //   });
-    // });
+    pb.build(getSomething).then(
+      response => {
+        // console.log('FIRST RESPONSE', response);
+        pb.finishPromise('GetSomething');
+        pb.build(getSomething).then(secondRes => {
+          // console.log('SECOND RESPONSE', secondRes);
+          pb.finishPromise('GetSomething');
+        });
+      },
+      reason => {
+        // console.log('ERROR', reason);
+      }
+    );
 
     promiseBatch.addList(listOfPromises);
-    const a = promiseBatch.build(listOfPromises[0]);
 
     const call = promiseBatch.promiseAll(concurrentLimit);
     promiseBatch.finishAllPromises();
