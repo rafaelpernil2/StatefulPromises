@@ -4,4 +4,4 @@ export const PROMISE_STATUS = {
   REJECTED: 'r'
 };
 
-export const NO_CACHE = undefined;
+export const NO_RESULT = undefined;

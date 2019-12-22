@@ -3,7 +3,7 @@ export interface ICustomPromise<T> {
   name: string;
   thisArg?: any;
   args?: any[];
-  disableCache?: boolean;
+  lazyMode?: boolean;
   function(...args: any[]): PromiseLike<T>;
   validate?(response: T): boolean;
   doneCallback?(data: T): T;

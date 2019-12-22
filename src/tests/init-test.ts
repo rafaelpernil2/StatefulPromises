@@ -17,7 +17,8 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
         name: 'GetSomething',
         function: PromiseUtil.buildFixedTimePromise(10),
         thisArg: undefined,
-        args: [{ result: 'Result' }]
+        args: [{ result: 'Result' }],
+        lazyMode: true
       },
       {
         name: 'CreateSomething',
@@ -98,15 +99,32 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
         function: PromiseUtil.buildFixedTimePromise(10)
       }
     ];
-    // promiseBatch.add(listOfPromises[0]);
+
+    // const getSomething = {
+    //   name: 'GetSomething',
+    //   function: PromiseUtil.buildFixedTimePromise(10000),
+    //   thisArg: undefined,
+    //   args: [{ result: 'Result' }],
+    //   disableCache: false
+    // };
+
+    // const pb = new PromiseBatch(new PromiseBatchStatus());
+
+    // pb.build(listOfPromises[0]).then(response => {
+    //   // console.log('FIRST RESPONSE', response);
+    //   pb.finishPromise('GetSomething');
+    //   pb.build(listOfPromises[0]).then(secondRes => {
+    //     // console.log('SECOND RESPONSE', secondRes);
+    //     pb.finishPromise('GetSomething');
+    //   });
+    // });
+
     promiseBatch.addList(listOfPromises);
-    // const a = promiseBatch.build(listOfPromises[0]);
+    const a = promiseBatch.build(listOfPromises[0]);
 
     const call = promiseBatch.promiseAll(concurrentLimit);
     promiseBatch.finishAllPromises();
     const result = await call;
-
-    // console.log(result);
 
     const expectedResult = {
       GetSomething: [{ result: 'Result' }],
@@ -122,10 +140,12 @@ describe('Initial test. The method promiseAll of a PromiseBatch instance with a 
       SendLog: PromiseUtil.NO_INPUT_PROVIDED
     };
 
-    // const call2 = promiseBatch.promiseAll(concurrentLimit);
-    // promiseBatch.finishAllPromises();
-    // const result2 = await call2;
+    const call2 = promiseBatch.promiseAll(concurrentLimit);
+    promiseBatch.finishAllPromises();
+    const result2 = await call2;
 
-    expect(result).to.eql(expectedResult);
+    expect(result2).to.eql(expectedResult);
   });
 });
+
+// describe('PromiseBatch')

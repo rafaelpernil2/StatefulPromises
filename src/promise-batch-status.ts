@@ -1,6 +1,6 @@
 import ko from 'knockout';
-import { PROMISE_STATUS } from '../constants/global-constants';
-import { IAnyObject } from '../interfaces/i-any-object';
+import { PROMISE_STATUS } from './constants/global-constants';
+import { IAnyObject } from './interfaces/i-any-object';
 
 type PromiseStatus = typeof PROMISE_STATUS[keyof typeof PROMISE_STATUS];
 
@@ -50,5 +50,12 @@ export class PromiseBatchStatus {
 
   public notifyAsFinished(key: string) {
     this.statusObj.Status[`${key}AfterCallback`](PROMISE_STATUS.FULFILLED);
+  }
+
+  public reset() {
+    this.statusObj = {
+      Status: {},
+      Cache: {}
+    };
   }
 }
