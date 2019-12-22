@@ -97,24 +97,19 @@ export class PromiseBatch {
   private async buildAll(concurrentLimit?: number) {
     const promisesInProgress = [];
     const promiseList = Object.keys(this.customPromiseList);
-
     // Initialize the status in all promises because they cannot be handled otherwise
     promiseList.forEach(promiseName => {
       this.statusObject.initStatus(promiseName);
     });
-
     // Set concurrent limit if provided and make sure it is within the amount of promises to process
     const execLimit = concurrentLimit && concurrentLimit <= promiseList.length ? concurrentLimit : promiseList.length;
-
     // We remove the initial promises are going to queue
     const awaitingPromises = promiseList.slice(execLimit, promiseList.length);
-
     // Initialization of promises
     for (let index = 0; index < execLimit; index++) {
       const promise = this.customPromiseList[promiseList[index]];
-      promisesInProgress.push(this.concurrentPromiseExecRec<unknown>(promise, awaitingPromises));
+      promisesInProgress.push(this.buildAllRec(promise, awaitingPromises));
     }
-
     // Await promises
     for (const promise of promisesInProgress) {
       // No data processing here
@@ -122,35 +117,29 @@ export class PromiseBatch {
     }
   }
 
-  private concurrentPromiseExecRec = async <T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> => {
+  private buildAllRec = async <T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> => {
     let result = {} as Promise<IAnyObject> | IAnyObject;
     const awaitingPromiseList = promiseNameList;
-
     if (!customPromise || !customPromise.function) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
-
     // Call the builder and wait until promise ends
     const promiseResult = await this.promiseTryCatch(customPromise);
-
     // Add property to batchResponse if the property does not exist or if the result was cached
     if (!this.batchResponse.hasOwnProperty(customPromise.name) || !customPromise.lazyMode) {
       this.batchResponse[customPromise.name] = promiseResult;
     }
-
     // If there any left promises to process...
     if (awaitingPromiseList.length) {
       // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
       const nextPromiseName = awaitingPromiseList.shift();
-
       if (nextPromiseName) {
         const nextPromise = this.customPromiseList[nextPromiseName];
-        result = this.concurrentPromiseExecRec(nextPromise, awaitingPromiseList);
+        result = this.buildAllRec(nextPromise, awaitingPromiseList);
       }
     } else {
       result = promiseResult;
     }
-
     return result;
   };
 

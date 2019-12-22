@@ -12,3 +12,5 @@ export const ERROR_MSG = {
 };
 
 export const NO_RESULT = undefined;
+
+export const AFTER_CALLBACK = 'AfterCallback';

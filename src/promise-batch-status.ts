@@ -1,61 +1,61 @@
 import ko from 'knockout';
-import { ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
+import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 
 type PromiseStatus = typeof PROMISE_STATUS[keyof typeof PROMISE_STATUS];
 
 export class PromiseBatchStatus {
-  private statusObj: IAnyObject;
+  public statusObject: IAnyObject;
 
   constructor() {
-    this.statusObj = {
+    this.statusObject = {
       Status: {},
       Cache: {}
     };
   }
 
   public initStatus(key: string) {
-    if (!this.statusObj.Status[key] || !this.statusObj.Status[`${key}AfterCallback`]) {
+    if (!this.statusObject.Status[key] || !this.statusObject.Status[`${key}${AFTER_CALLBACK}`]) {
       this.resetStatus(key);
     }
   }
 
   public resetStatus(key: string) {
-    this.statusObj.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
-    this.statusObj.Status[`${key}AfterCallback`] = ko.observable(PROMISE_STATUS.PENDING);
+    this.statusObject.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
+    this.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.PENDING);
   }
 
   public updateStatus(key: string, status: PromiseStatus) {
-    if (this.statusObj.Status[key] && this.statusObj.Status[key]()) {
-      this.statusObj.Status[key](status);
+    if (this.statusObject.Status[key] && this.statusObject.Status[key]()) {
+      this.statusObject.Status[key](status);
     }
   }
 
   public observeStatus(key: string) {
-    if (this.statusObj.Status[key] && this.statusObj.Status[key]()) {
-      return this.statusObj.Status[key]();
+    if (this.statusObject.Status[key] && this.statusObject.Status[key]()) {
+      return this.statusObject.Status[key]();
     }
   }
 
   public getCachedResponse(key: string) {
-    return this.statusObj.Cache[key] ?? ERROR_MSG.NO_CACHED_VALUE;
+    return this.statusObject.Cache[key] ?? ERROR_MSG.NO_CACHED_VALUE;
   }
 
   public addCachedResponse<T>(key: string, data: T) {
-    this.statusObj.Cache[key] = data;
+    this.statusObject.Cache[key] = data;
   }
 
   public getStatusList(): IAnyObject {
-    return this.statusObj.Status;
+    return this.statusObject.Status;
   }
 
   public getCacheList(): IAnyObject {
-    return this.statusObj.Cache;
+    return this.statusObject.Cache;
   }
 
   public getFailedPromisesList(): string[] {
     const failedList: string[] = [];
-    Object.keys(this.statusObj.Status).forEach(key => {
+    Object.keys(this.statusObject.Status).forEach(key => {
       if (this.observeStatus(key) === PROMISE_STATUS.REJECTED) {
         failedList.push(key);
       }
@@ -70,11 +70,11 @@ export class PromiseBatchStatus {
   }
 
   public notifyAsFinished(key: string) {
-    this.statusObj.Status[`${key}AfterCallback`](PROMISE_STATUS.FULFILLED);
+    this.updateStatus(`${key}${AFTER_CALLBACK}`, PROMISE_STATUS.FULFILLED);
   }
 
   public reset() {
-    this.statusObj = {
+    this.statusObject = {
       Status: {},
       Cache: {}
     };

@@ -14,7 +14,6 @@ export class DataUtil {
         return value() !== PROMISE_STATUS.PENDING;
       });
     });
-
     return new Promise<boolean>(resolve => {
       if (arePromisesCompleted) {
         resolve(true);
@@ -43,9 +42,7 @@ export class DataUtil {
       const response = customPromise?.lazyMode ? NO_RESULT : promiseStatus.getCachedResponse(customPromise.name);
       return Promise.resolve(response);
     }
-
     const args = customPromise && customPromise.args ? customPromise.args : [];
-
     // Initialize status as pending if it wasn't created before.
     // .initStatus takes care of that
     promiseStatus.initStatus(customPromise.name);
@@ -59,10 +56,8 @@ export class DataUtil {
           };
           // Validate response if a validator was provided
           DataUtil.execValidateIfProvided(customPromise, promiseStatus, doneData);
-
           // Execute done or catch callback depending on the status in doneData
           DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, doneData);
-
           // If lazy mode is disabled, it should cache the response after done callback.
           // Lazy mode means -> no return value the next time
           // It does not matter if the data is validated or not, you can do whatever you want with it
