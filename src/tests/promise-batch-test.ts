@@ -26,7 +26,6 @@ const cp: ICustomPromise<object[]> = {
   lazyMode: true
 };
 
-
 const cpl: Array<ICustomPromise<unknown>> = [
   {
     name: 'ExternalAPI2',
@@ -49,7 +48,7 @@ describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>): Given a customP
     const cp2: ICustomPromise<number> = {
       name: 'GetSomething',
       function: PromiseUtil.buildSingleParamFixedTimePromise<number>(5000)
-    }
+    };
     pb.add(cp);
     pb.add(cp2);
     expect(pb.customPromiseList[cp.name]).to.eql(cp);
@@ -69,7 +68,6 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
     const pb = new PromiseBatch();
     pb.addList([]);
     expect(pb.customPromiseList).to.eql({});
-
   });
 });
 
