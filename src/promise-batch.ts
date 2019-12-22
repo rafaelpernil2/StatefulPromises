@@ -117,7 +117,7 @@ export class PromiseBatch {
     }
   }
 
-  private buildAllRec = async <T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> => {
+  private async buildAllRec<T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> {
     let result = {} as Promise<IAnyObject> | IAnyObject;
     const awaitingPromiseList = promiseNameList;
     if (!customPromise || !customPromise.function) {
@@ -141,7 +141,7 @@ export class PromiseBatch {
       result = promiseResult;
     }
     return result;
-  };
+  }
 
   private async promiseTryCatch<T>(customPromise: ICustomPromise<T>) {
     try {
