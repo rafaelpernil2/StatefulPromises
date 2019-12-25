@@ -675,7 +675,6 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
     } catch (error) {
       // Fix the input
       newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
-      pb.addList(newCpl);
       result = await pb.retryFailed();
     }
     const expectedRes = {

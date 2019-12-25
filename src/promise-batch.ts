@@ -11,8 +11,8 @@ export class PromiseBatch {
 
   constructor(statusObject?: PromiseBatchStatus) {
     this.statusObject = statusObject ?? new PromiseBatchStatus();
-    this.customPromiseList = {} as IAnyObject;
-    this.batchResponse = {} as IAnyObject;
+    this.customPromiseList = {};
+    this.batchResponse = {};
   }
 
   public add<T>(customPromise: ICustomPromise<T>) {
@@ -23,12 +23,12 @@ export class PromiseBatch {
 
   public addList(customPromiseList: Array<ICustomPromise<unknown>>) {
     customPromiseList.forEach(promise => {
-      this.customPromiseList[promise.name] = promise;
+      this.add(promise);
     });
   }
 
   public build<T>(nameOrCustomPromise: string | ICustomPromise<T>): PromiseLike<T> {
-    const customPromise = typeof nameOrCustomPromise === 'string' ? this.customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
+    const customPromise = this.getPromiseData(this.customPromiseList, nameOrCustomPromise);
     this.add(customPromise);
     return DataUtil.buildStatefulPromise<T>(customPromise, this.statusObject);
   }
@@ -61,7 +61,7 @@ export class PromiseBatch {
   }
 
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
-    const promiseName = typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
+    const promiseName = this.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
     if (!this.customPromiseList[promiseName].doneCallback) {
       this.statusObject.notifyAsFinished(promiseName);
@@ -79,6 +79,14 @@ export class PromiseBatch {
   public reset() {
     this.batchResponse = {};
     this.statusObject.reset();
+  }
+
+  private getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+    return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
+  }
+
+  private getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>) {
+    return typeof nameOrCustomPromise === 'string' ? customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
   }
 
   private async _promiseAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<IAnyObject> {
@@ -112,7 +120,7 @@ export class PromiseBatch {
     // Set concurrent limit if provided and make sure it is within the amount of promises to process
     const execLimit = concurrentLimit && concurrentLimit <= promiseList.length ? concurrentLimit : promiseList.length;
     // We remove the initial promises are going to queue
-    const awaitingPromises = promiseList.slice(execLimit, promiseList.length);
+    const awaitingPromises = promiseList.slice(execLimit);
     // Initialization of promises
     for (let index = 0; index < execLimit; index++) {
       const promise = customPromiseList[promiseList[index]];
@@ -126,7 +134,7 @@ export class PromiseBatch {
   }
 
   private async buildAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> {
-    let result = {} as Promise<IAnyObject> | IAnyObject;
+    let result: Promise<IAnyObject> | IAnyObject = {};
     const awaitingPromiseList = promiseNameList;
     if (!customPromise || !customPromise.function) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);

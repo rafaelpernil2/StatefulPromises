@@ -55,7 +55,7 @@ export class DataUtil {
             response
           };
           // Validate response if a validator was provided
-          DataUtil.execValidateIfProvided(customPromise, promiseStatus, doneData);
+          DataUtil.execValidateIfProvided(customPromise, doneData);
           // Execute done or catch callback depending on the status in doneData
           DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, doneData);
           // If cache is enabled, the response has to be saved in cache
@@ -66,7 +66,7 @@ export class DataUtil {
           if (doneData.status === PROMISE_STATUS.FULFILLED) {
             resolve(doneData.response);
           } else {
-            reject(doneData.response as T);
+            reject(doneData.response);
           }
         },
         (error: unknown) => {
@@ -101,7 +101,7 @@ export class DataUtil {
     }
   }
 
-  private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, doneData: IAnyObject) {
+  private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, doneData: IAnyObject) {
     // Validate response if a validator was provided
     if (customPromise.validate) {
       // If the variable is an object, it must be cloned to avoid modifications
