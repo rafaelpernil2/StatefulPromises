@@ -572,7 +572,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
 });
 
 describe('PromiseBatch.retryFailed(): Given a series of promises failed when executing promiseAll or promiseAny, those are retried', () => {
-  it('Given a set of promises with no one rejected, calls promiseAll() with an empty list and returns an the same list as before and the promise list is empty', async () => {
+  it('Given a set of promises with no one rejected, calls promiseAll() with an empty list and returns an the same list as before and the promise list is the same', async () => {
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);
     const pu = new PromiseUtil();
@@ -625,7 +625,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
       Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
     };
     expect(result).to.eql(expectedRes);
-    expect(pb.customPromiseList).eql({});
+    expect(pb.customPromiseList).eql({ [newCpl[0].name]: newCpl[0], [newCpl[1].name]: newCpl[1] });
   });
   // tslint:disable-next-line: max-line-length
   it('Given a set of promises with at least one rejected, calls promiseAll() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
@@ -683,7 +683,6 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
       Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
     };
     expect(result).to.eql(expectedRes);
-    expect(pb.customPromiseList).to.not.have.keys(['Promise1']);
   });
 });
 describe('PromiseBatch.getBatchResponse(): Returns the batch response of previous calls to promiseAll or promiseAny', () => {

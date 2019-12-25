@@ -34,27 +34,18 @@ export class PromiseBatch {
   }
 
   public async promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
-    await this.buildAll(concurrentLimit);
-    if (await this.isFulfilled()) {
-      return this.getBatchResponse();
-    } else {
-      throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
-    }
+    return this._promiseAll(this.customPromiseList, concurrentLimit);
   }
 
   public async promiseAny(concurrentLimit?: number): Promise<IAnyObject> {
-    await this.buildAll(concurrentLimit);
-    if (await this.isCompleted()) {
-      return this.getBatchResponse();
-    } else {
-      throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
-    }
+    return this._promiseAny(this.customPromiseList, concurrentLimit);
   }
 
-  public retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
-    this.filterFulfilledPromises();
+  public async retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
+    const failedPromises = this.filterFulfilledPromises();
     this.statusObject.resetFailedPromises();
-    return this.promiseAll(concurrentLimit);
+    const result = await this._promiseAll(failedPromises, concurrentLimit);
+    return result;
   }
 
   public getBatchResponse(): IAnyObject {
@@ -90,9 +81,27 @@ export class PromiseBatch {
     this.statusObject.reset();
   }
 
-  private async buildAll(concurrentLimit?: number) {
+  private async _promiseAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<IAnyObject> {
+    await this.buildAll(customPromiseList, concurrentLimit);
+    if (await this.isFulfilled()) {
+      return this.getBatchResponse();
+    } else {
+      throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
+    }
+  }
+
+  private async _promiseAny(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<IAnyObject> {
+    await this.buildAll(customPromiseList, concurrentLimit);
+    if (await this.isCompleted()) {
+      return this.getBatchResponse();
+    } else {
+      throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
+    }
+  }
+
+  private async buildAll(customPromiseList: IAnyObject, concurrentLimit?: number) {
     const promisesInProgress = [];
-    const promiseList = Object.keys(this.customPromiseList);
+    const promiseList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
     promiseList.forEach(promiseName => {
       this.statusObject.initStatus(promiseName);
@@ -106,8 +115,8 @@ export class PromiseBatch {
     const awaitingPromises = promiseList.slice(execLimit, promiseList.length);
     // Initialization of promises
     for (let index = 0; index < execLimit; index++) {
-      const promise = this.customPromiseList[promiseList[index]];
-      promisesInProgress.push(this.buildAllRec(promise, awaitingPromises));
+      const promise = customPromiseList[promiseList[index]];
+      promisesInProgress.push(this.buildAllRec(customPromiseList, promise, awaitingPromises));
     }
     // Await promises
     for (const promise of promisesInProgress) {
@@ -116,7 +125,7 @@ export class PromiseBatch {
     }
   }
 
-  private async buildAllRec<T>(customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> {
+  private async buildAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> {
     let result = {} as Promise<IAnyObject> | IAnyObject;
     const awaitingPromiseList = promiseNameList;
     if (!customPromise || !customPromise.function) {
@@ -135,8 +144,8 @@ export class PromiseBatch {
       // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
       const nextPromiseName = awaitingPromiseList.shift();
       if (nextPromiseName) {
-        const nextPromise = this.customPromiseList[nextPromiseName];
-        result = this.buildAllRec(nextPromise, awaitingPromiseList);
+        const nextPromise = customPromiseList[nextPromiseName];
+        result = this.buildAllRec(customPromiseList, nextPromise, awaitingPromiseList);
       }
     } else {
       result = promiseResult;
@@ -155,10 +164,12 @@ export class PromiseBatch {
 
   private filterFulfilledPromises() {
     const failedList = this.statusObject.getFailedPromisesList();
+    const result: IAnyObject = {};
     Object.keys(this.customPromiseList).forEach(promiseName => {
-      if (!failedList.includes(promiseName)) {
-        delete this.customPromiseList[promiseName];
+      if (failedList.includes(promiseName)) {
+        result[promiseName] = this.customPromiseList[promiseName];
       }
     });
+    return result;
   }
 }
