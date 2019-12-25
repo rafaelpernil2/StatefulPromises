@@ -1,4 +1,4 @@
-import { ERROR_MSG } from './constants/global-constants';
+import { ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { PromiseBatchStatus } from './promise-batch-status';
@@ -122,10 +122,12 @@ export class PromiseBatch {
     if (!customPromise || !customPromise.function) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
+    // Save the previous status
+    const prevStatus = this.statusObject.observeStatus(customPromise.name);
     // Call the builder and wait until promise ends
     const promiseResult = await this.promiseTryCatch(customPromise);
-    // Add property to batchResponse if the property does not exist or if the result was cached
-    if (!this.batchResponse.hasOwnProperty(customPromise.name) || !customPromise.lazyMode) {
+    // Add property to batchResponse the first time or if the previous status is not fulfilled, (i.e, we are retrying the failed ones and the status was reset)
+    if (!this.batchResponse.hasOwnProperty(customPromise.name) || prevStatus !== PROMISE_STATUS.FULFILLED) {
       this.batchResponse[customPromise.name] = promiseResult;
     }
     // If there any left promises to process...

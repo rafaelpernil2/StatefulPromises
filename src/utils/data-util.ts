@@ -37,9 +37,9 @@ export class DataUtil {
   };
 
   public static buildStatefulPromise = async <T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> => {
-    // Return cached value if chosen
+    // Return cached value if available
     if (promiseStatus.observeStatus(customPromise.name) === PROMISE_STATUS.FULFILLED) {
-      const response = customPromise?.lazyMode ? NO_RESULT : promiseStatus.getCachedResponse(customPromise.name);
+      const response = customPromise?.cached ? promiseStatus.getCachedResponse(customPromise.name) : NO_RESULT;
       return Promise.resolve(response);
     }
     const args = customPromise && customPromise.args ? customPromise.args : [];
@@ -58,10 +58,8 @@ export class DataUtil {
           DataUtil.execValidateIfProvided(customPromise, promiseStatus, doneData);
           // Execute done or catch callback depending on the status in doneData
           DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, doneData);
-          // If lazy mode is disabled, it should cache the response after done callback.
-          // Lazy mode means -> no return value the next time
-          // It does not matter if the data is validated or not, you can do whatever you want with it
-          if (!customPromise?.lazyMode) {
+          // If cache is enabled, the response has to be saved in cache
+          if (customPromise?.cached) {
             promiseStatus.addCachedResponse(customPromise.name, doneData.response);
           }
           // If fulfilled...

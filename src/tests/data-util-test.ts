@@ -374,7 +374,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
   });
 
   // tslint:disable-next-line: max-line-length
-  it('Second and up executions - LazyMode disabled: Given that "promiseStatus" has a fullfilled promise and customPromise contains "name", "function", "thisArgs", "args", "lazyMode" as false, "validate", "doneCallback" and "catchCallback" and the previously fulfilled promise resolved "Resolved1" now it returns "Resolved1" without calling the promise nor calling validate, doneCallback or catchCallback', async () => {
+  it('Second and up executions - Cache enabled: Given that "promiseStatus" has a fullfilled promise and customPromise contains "name", "function", "thisArgs", "args", "cached" as true, "validate", "doneCallback" and "catchCallback" and the previously fulfilled promise resolved "Resolved1" now it returns "Resolved1" without calling the promise nor calling validate, doneCallback or catchCallback', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
     let validatorExecuted = false;
@@ -385,7 +385,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeCheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED],
-      lazyMode: false,
+      cached: true,
       validate: data => {
         validatorExecuted = true;
         return PromiseUtil.dummyValidator(data);
@@ -417,7 +417,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
   });
 
   // tslint:disable-next-line: max-line-length
-  it('Second and up executions - LazyMode enabled: Given that "promiseStatus" has a fullfilled promise and customPromise contains "name", "function", "thisArgs", "args", "lazyMode" as true, "validate", "doneCallback" and "catchCallback" and the previously fulfilled promise resolved "Resolved1" now it returns NO_RESULT (undefined) without calling the promise nor calling validate, doneCallback or catchCallback', async () => {
+  it('Second and up executions - Cache disabled: Given that "promiseStatus" has a fullfilled promise and customPromise contains "name", "function", "thisArgs", "args", "cached" as false, "validate", "doneCallback" and "catchCallback" and the previously fulfilled promise resolved "Resolved1" now it returns NO_RESULT (undefined) without calling the promise nor calling validate, doneCallback or catchCallback', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
     let validatorExecuted = false;
@@ -428,7 +428,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeCheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED],
-      lazyMode: true,
+      cached: false,
       validate: data => {
         validatorExecuted = true;
         return PromiseUtil.dummyValidator(data);

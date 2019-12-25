@@ -24,7 +24,7 @@ const cp: ICustomPromise<object[]> = {
     return [{ result: res }];
   },
   args: [{ result: 'Result' }],
-  lazyMode: true
+  cached: true
 };
 
 const cpl: Array<ICustomPromise<unknown>> = [
@@ -218,7 +218,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -234,7 +234,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -272,7 +272,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(1000),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -286,9 +286,9 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise2',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(10),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -457,7 +457,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -473,7 +473,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -510,7 +510,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(1000),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -524,9 +524,9 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise2',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(10),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -539,8 +539,8 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       }
     ];
 
-    const pbs1 = new PromiseBatchStatus();
-    const pb1 = new PromiseBatch(pbs1);
+
+    const pb1 = new PromiseBatch();
 
     pb1.addList(newCpl);
 
@@ -550,13 +550,13 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     const result1 = await call1;
     const tFirst1 = process.hrtime(tFirst0);
 
-    const pbs2 = new PromiseBatchStatus();
-    const pb2 = new PromiseBatch(pbs2);
+
+    const pb2 = new PromiseBatch();
 
     pb2.addList(newCpl);
 
     const tSecond0 = process.hrtime();
-    const call2 = pb2.promiseAny(2);
+    const call2 = pb2.promiseAny();
     pb2.finishAllPromises();
     const result2 = await call2;
     const tSecond1 = process.hrtime(tSecond0);
@@ -584,7 +584,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -600,7 +600,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -640,7 +640,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
@@ -656,7 +656,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
         thisArg: pu,
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
-        lazyMode: false,
+        cached: false,
         validate: (data: string) => {
           return PromiseUtil.dummyValidator(data);
         },
