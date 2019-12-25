@@ -84,18 +84,23 @@ export class DataUtil {
   };
 
   private static execDoneOrCatchCallback<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
+    promiseStatus.updateStatus(customPromise.name, data.status);
     switch (data.status) {
       case PROMISE_STATUS.FULFILLED:
-        data.response = customPromise.doneCallback ? customPromise.doneCallback(data.response) : data.response;
+        if (customPromise.doneCallback) {
+          data.response = customPromise.doneCallback(data.response);
+          promiseStatus.notifyAsFinished(customPromise.name);
+        }
         break;
       case PROMISE_STATUS.REJECTED:
-        data.response = customPromise.catchCallback ? customPromise.catchCallback(data.response) : data.response;
+        if (customPromise.catchCallback) {
+          data.response = customPromise.catchCallback(data.response);
+          promiseStatus.notifyAsFinished(customPromise.name);
+        }
         break;
       default:
         break;
     }
-    promiseStatus.updateStatus(customPromise.name, data.status);
-    promiseStatus.notifyAsFinished(customPromise.name);
   }
 
   private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, doneData: IAnyObject) {

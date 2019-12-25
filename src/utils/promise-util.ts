@@ -1,8 +1,14 @@
 /*tslint:disable:no-any */
 import { IAnyObject } from '../interfaces/i-any-object';
 
-// This class is only used for testing purposes
+export const DUMMY_MESSAGES = {
+  RESOLVED: 'Resolved',
+  REJECTED: 'Rejected'
+};
 
+export const SIMPLE_TEST = 'FirstExecSimpleTest';
+
+// This class is only used for testing purposes
 export class PromiseUtil {
   public static NO_INPUT_PROVIDED = { res: 'No input provided' };
 
@@ -17,6 +23,20 @@ export class PromiseUtil {
             resolve(PromiseUtil.NO_INPUT_PROVIDED);
           }
         }, time);
+      });
+    };
+  };
+
+  public static buildFixedTimeNoParamPromise = (timeInMs: number, ok: boolean) => {
+    return () => {
+      return new Promise<any>((resolve, reject) => {
+        setTimeout(() => {
+          if (ok) {
+            resolve(DUMMY_MESSAGES.RESOLVED);
+          } else {
+            reject(DUMMY_MESSAGES.REJECTED);
+          }
+        }, timeInMs);
       });
     };
   };
@@ -42,7 +62,7 @@ export class PromiseUtil {
           if (input) {
             resolve(input);
           } else {
-            resolve();
+            reject();
           }
         }, timeInMs);
       });
@@ -61,7 +81,65 @@ export class PromiseUtil {
     };
   };
 
-  public static dummyValidator = (input: any) => {
-    return input !== PromiseUtil.NO_INPUT_PROVIDED ? input : false;
+  public static setTimeout = (timeInMs: number) => {
+    return new Promise<void>(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, timeInMs);
+    });
   };
+
+  public static dummyValidator = (input: any) => {
+    return input === DUMMY_MESSAGES.RESOLVED;
+  };
+
+  // For testing promises with thisArg
+  public input: unknown;
+  constructor(input?: unknown) {
+    this.input = input;
+  }
+
+  public buildSingleParamFixedTimePromise<T>(timeInMs: number) {
+    return PromiseUtil.buildSingleParamFixedTimePromise<T>(timeInMs);
+  }
+  public buildPassthroughPromise(timeInMs: number) {
+    return PromiseUtil.buildPassthroughPromise(timeInMs);
+  }
+
+  public buildNoParamFixedTimePromise(timeInMs: number) {
+    return () => {
+      return new Promise<string>((resolve, reject) => {
+        setTimeout(() => {
+          if (this.input === DUMMY_MESSAGES.RESOLVED) {
+            resolve(this.input);
+          } else {
+            reject(this.input);
+          }
+        }, timeInMs);
+      });
+    };
+  }
+
+  public buildSingleParamFixedTimeUncheckedPromise(timeInMs: number) {
+    return (input: string) => {
+      return new Promise<string>((resolve, reject) => {
+        setTimeout(() => {
+          resolve(input);
+        }, timeInMs);
+      });
+    };
+  }
+  public buildSingleParamFixedTimeCheckedPromise(timeInMs: number) {
+    return (input: string) => {
+      return new Promise<string>((resolve, reject) => {
+        setTimeout(() => {
+          if (input === DUMMY_MESSAGES.RESOLVED) {
+            resolve(input);
+          } else {
+            reject(input);
+          }
+        }, timeInMs);
+      });
+    };
+  }
 }

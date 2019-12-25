@@ -72,7 +72,7 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
 });
 
 describe('PromiseBatch.build()', () => {
-  it('does something', async () => {
+  it('', async () => {
     // Implement if needed
   });
 });
