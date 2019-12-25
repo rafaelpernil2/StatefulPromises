@@ -1,5 +1,5 @@
 import { DataUtil, ICustomPromise, PromiseBatchStatus } from '../index';
-import { PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
+import { SIMPLE_TEST } from '../utils/promise-util';
 
 (async () => {
   const pbs = new PromiseBatchStatus();
@@ -15,16 +15,15 @@ import { PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
   try {
     await DataUtil.buildStatefulPromise(cp1, pbs);
   } catch (error) {
-    // Even if the promise is rejected, we save the error value;
-    // return error;
+    // Do nothing
   }
   try {
     await DataUtil.buildStatefulPromise(cp2, pbs);
   } catch (error) {
-    // Even if the promise is rejected, we save the error value;
-    // return error;
+    // Do nothing
   }
   const checkCompleted = DataUtil.isPromiseBatchCompleted(pbs);
+
   pbs.notifyAsFinished(SIMPLE_TEST);
 
   if (process && process.send) {

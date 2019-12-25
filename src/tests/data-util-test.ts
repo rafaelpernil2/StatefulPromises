@@ -38,7 +38,7 @@ describe('DataUtil.isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Giv
   });
   it('Given a set of two customPromises built under the same batchStatus, when at least one of them is not notified as finished, the function waits forever', async () => {
     // Create the child
-    const child = cp.fork(path.join(__dirname, '../workers/test-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
+    const child = cp.fork(path.join(__dirname, '../workers/batch-completed-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
     // Use an observable variable to refresh the value once the worker finishes
     const isCompleted = ko.observable(false);
     child.on('message', data => isCompleted(data));
@@ -53,7 +53,33 @@ describe('DataUtil.isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Giv
 });
 
 describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Given a "batchStatus", it checks if all properties have a value equal to fulfilled and waits for changes until all are fulfilled', () => {
-  it('Given a set of two customPromises built and completed under the same batchStatus, once both are finished this function returns true', async () => {
+  it('Given a set of two customPromises built and completed under the same batchStatus, once both are fulfilled this function returns true', async () => {
+    const pbs = new PromiseBatchStatus();
+    const cp1: ICustomPromise<string> = {
+      name: SIMPLE_TEST,
+      function: () => Promise.resolve('')
+    };
+    const cp2: ICustomPromise<string> = {
+      name: `${SIMPLE_TEST}2`,
+      function: () => Promise.resolve('')
+    };
+    try {
+      await DataUtil.buildStatefulPromise(cp1, pbs);
+    } catch (error) {
+      // Do nothing
+    }
+    try {
+      await DataUtil.buildStatefulPromise(cp2, pbs);
+    } catch (error) {
+      // Do nothing
+    }
+    const checkCompleted = DataUtil.isPromiseBatchFulfilled(pbs);
+    pbs.notifyAsFinished(SIMPLE_TEST);
+    pbs.notifyAsFinished(`${SIMPLE_TEST}2`);
+    const result = await checkCompleted;
+    expect(result).to.eq(true);
+  });
+  it('Given a set of two customPromises built and completed under the same batchStatus, once any of them is rejected this function returns false', async () => {
     const pbs = new PromiseBatchStatus();
     const cp1: ICustomPromise<string> = {
       name: SIMPLE_TEST,
@@ -81,17 +107,17 @@ describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Giv
   });
   it('Given a set of two customPromises built under the same batchStatus, when at least one of them is not notified as finished, the function waits forever', async () => {
     // Create the child
-    const child = cp.fork(path.join(__dirname, '../workers/test-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
+    const child = cp.fork(path.join(__dirname, '../workers/batch-fulfilled-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
     // Use an observable variable to refresh the value once the worker finishes
-    const isCompleted = ko.observable(false);
-    child.on('message', data => isCompleted(data));
+    const isFulfilled = ko.observable(false);
+    child.on('message', data => isFulfilled(data));
     // Kill after 5000 ms
     setTimeout(() => {
       child.kill();
     }, 5000);
     await PromiseUtil.setTimeout(5000);
 
-    expect(isCompleted()).to.eq(false);
+    expect(isFulfilled()).to.eq(false);
   });
 });
 
@@ -164,6 +190,20 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     const result = await DataUtil.buildStatefulPromise(p, pbs);
     expect(result).to.equal(DUMMY_MESSAGES.RESOLVED);
+  });
+
+  // tslint:disable-next-line: max-line-length
+  it('First execution - Simple thisArg| Multiple args OK: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs" and "args", it resolves with "Resolved"', async () => {
+    const pbs = new PromiseBatchStatus();
+    const pu = new PromiseUtil();
+    const p: ICustomPromise<string> = {
+      name: SIMPLE_TEST,
+      thisArg: pu,
+      function: pu.buildPassthroughPromise(0),
+      args: [DUMMY_MESSAGES.RESOLVED, 'dummy', 'another']
+    };
+    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    expect(result).to.eql(p.args);
   });
 
   // tslint:disable-next-line: max-line-length

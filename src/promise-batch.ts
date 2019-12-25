@@ -33,26 +33,22 @@ export class PromiseBatch {
     return DataUtil.buildStatefulPromise<T>(customPromise, this.statusObject);
   }
 
-  public promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
-    this.buildAll(concurrentLimit);
-    return new Promise<IAnyObject>(async (resolve, reject) => {
-      if (await this.isFulfilled()) {
-        resolve(this.getBatchResponse());
-      } else {
-        reject(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
-      }
-    });
+  public async promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
+    await this.buildAll(concurrentLimit);
+    if (await this.isFulfilled()) {
+      return this.getBatchResponse();
+    } else {
+      throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
+    }
   }
 
-  public promiseAny(concurrentLimit?: number): Promise<IAnyObject> {
-    this.buildAll(concurrentLimit);
-    return new Promise<IAnyObject>(async (resolve, reject) => {
-      if (await this.isCompleted()) {
-        resolve(this.getBatchResponse());
-      } else {
-        reject(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
-      }
-    });
+  public async promiseAny(concurrentLimit?: number): Promise<IAnyObject> {
+    await this.buildAll(concurrentLimit);
+    if (await this.isCompleted()) {
+      return this.getBatchResponse();
+    } else {
+      throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
+    }
   }
 
   public retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
@@ -101,6 +97,9 @@ export class PromiseBatch {
     promiseList.forEach(promiseName => {
       this.statusObject.initStatus(promiseName);
     });
+    if (concurrentLimit !== undefined && concurrentLimit <= 0) {
+      throw new Error(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+    }
     // Set concurrent limit if provided and make sure it is within the amount of promises to process
     const execLimit = concurrentLimit && concurrentLimit <= promiseList.length ? concurrentLimit : promiseList.length;
     // We remove the initial promises are going to queue
