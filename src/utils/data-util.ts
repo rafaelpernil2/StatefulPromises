@@ -4,7 +4,7 @@ import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatchStatus } from '../promise-batch-status';
 export class DataUtil {
-  public static isPromiseBatchCompleted = (batchStatus: PromiseBatchStatus): Promise<boolean> => {
+  public static isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Promise<boolean> {
     // Initial check
     const arePromisesCompleted = Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {
       return value() === PROMISE_STATUS.FULFILLED || value() === PROMISE_STATUS.REJECTED;
@@ -25,18 +25,18 @@ export class DataUtil {
         });
       }
     });
-  };
+  }
 
-  public static isPromiseBatchFulfilled = async (batchStatus: PromiseBatchStatus) => {
+  public static async isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus) {
     // First make sure all promises are completed
     await DataUtil.isPromiseBatchCompleted(batchStatus);
     // Then, check if they are fulfilled
     return Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {
       return value() === PROMISE_STATUS.FULFILLED;
     });
-  };
+  }
 
-  public static buildStatefulPromise = async <T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> => {
+  public static buildStatefulPromise<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> {
     // Return cached value if available
     if (promiseStatus.observeStatus(customPromise.name) === PROMISE_STATUS.FULFILLED) {
       const response = customPromise?.cached ? promiseStatus.getCachedResponse(customPromise.name) : NO_RESULT;
@@ -79,7 +79,7 @@ export class DataUtil {
         }
       );
     });
-  };
+  }
 
   private static execDoneOrCatchCallback<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
     promiseStatus.updateStatus(customPromise.name, data.status);

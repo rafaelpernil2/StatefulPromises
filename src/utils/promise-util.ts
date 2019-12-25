@@ -12,7 +12,7 @@ export const SIMPLE_TEST = 'FirstExecSimpleTest';
 export class PromiseUtil {
   public static NO_INPUT_PROVIDED = { res: 'No input provided' };
 
-  public static buildRandomTimePromise = (timeMagnitude: number) => {
+  public static buildRandomTimePromise(timeMagnitude: number) {
     const time = Math.ceil(Math.random() * 10) * timeMagnitude;
     return (...input: any[]) => {
       return new Promise<any>((resolve, reject) => {
@@ -25,9 +25,9 @@ export class PromiseUtil {
         }, time);
       });
     };
-  };
+  }
 
-  public static buildFixedTimeNoParamPromise = (timeInMs: number, ok: boolean) => {
+  public static buildFixedTimeNoParamPromise(timeInMs: number, ok: boolean) {
     return () => {
       return new Promise<any>((resolve, reject) => {
         setTimeout(() => {
@@ -39,9 +39,9 @@ export class PromiseUtil {
         }, timeInMs);
       });
     };
-  };
+  }
 
-  public static buildFixedTimePromise = (timeInMs: number) => {
+  public static buildFixedTimePromise(timeInMs: number) {
     return (...input: any[]) => {
       return new Promise<any>((resolve, reject) => {
         setTimeout(() => {
@@ -53,9 +53,9 @@ export class PromiseUtil {
         }, timeInMs);
       });
     };
-  };
+  }
 
-  public static buildSingleParamFixedTimePromise = <T>(timeInMs: number) => {
+  public static buildSingleParamFixedTimePromise<T>(timeInMs: number) {
     return (input: T) => {
       return new Promise<T>((resolve, reject) => {
         setTimeout(() => {
@@ -67,9 +67,9 @@ export class PromiseUtil {
         }, timeInMs);
       });
     };
-  };
+  }
 
-  public static buildPassthroughPromise = (timeInMs: number) => {
+  public static buildPassthroughPromise(timeInMs: number) {
     return (...input: any[]) => {
       return new Promise<any>((resolve, reject) => {
         if (input[0]) {
@@ -79,19 +79,19 @@ export class PromiseUtil {
         }
       });
     };
-  };
+  }
 
-  public static setTimeout = (timeInMs: number) => {
+  public static setTimeout(timeInMs: number) {
     return new Promise<void>(resolve => {
       setTimeout(() => {
         resolve();
       }, timeInMs);
     });
-  };
+  }
 
-  public static dummyValidator = (input: any) => {
+  public static dummyValidator(input: any) {
     return input === DUMMY_MESSAGES.RESOLVED;
-  };
+  }
 
   // For testing promises with thisArg
   public input: unknown;
