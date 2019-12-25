@@ -539,7 +539,6 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       }
     ];
 
-
     const pb1 = new PromiseBatch();
 
     pb1.addList(newCpl);
@@ -549,7 +548,6 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb1.finishAllPromises();
     const result1 = await call1;
     const tFirst1 = process.hrtime(tFirst0);
-
 
     const pb2 = new PromiseBatch();
 
