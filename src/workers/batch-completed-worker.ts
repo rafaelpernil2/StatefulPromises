@@ -13,12 +13,12 @@ import { SIMPLE_TEST } from '../utils/promise-util';
   };
 
   try {
-    await DataUtil.buildStatefulPromise(cp1, pbs);
+    await DataUtil.execStatefulPromise(cp1, pbs);
   } catch (error) {
     // Do nothing
   }
   try {
-    await DataUtil.buildStatefulPromise(cp2, pbs);
+    await DataUtil.execStatefulPromise(cp2, pbs);
   } catch (error) {
     // Do nothing
   }

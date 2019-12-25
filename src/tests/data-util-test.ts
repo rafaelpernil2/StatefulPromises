@@ -20,12 +20,12 @@ describe('DataUtil.isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Giv
       function: () => Promise.reject('')
     };
     try {
-      await DataUtil.buildStatefulPromise(cp1, pbs);
+      await DataUtil.execStatefulPromise(cp1, pbs);
     } catch (error) {
       // Do nothing
     }
     try {
-      await DataUtil.buildStatefulPromise(cp2, pbs);
+      await DataUtil.execStatefulPromise(cp2, pbs);
     } catch (error) {
       // Do nothing
     }
@@ -64,12 +64,12 @@ describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Giv
       function: () => Promise.resolve('')
     };
     try {
-      await DataUtil.buildStatefulPromise(cp1, pbs);
+      await DataUtil.execStatefulPromise(cp1, pbs);
     } catch (error) {
       // Do nothing
     }
     try {
-      await DataUtil.buildStatefulPromise(cp2, pbs);
+      await DataUtil.execStatefulPromise(cp2, pbs);
     } catch (error) {
       // Do nothing
     }
@@ -90,12 +90,12 @@ describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Giv
       function: () => Promise.reject('')
     };
     try {
-      await DataUtil.buildStatefulPromise(cp1, pbs);
+      await DataUtil.execStatefulPromise(cp1, pbs);
     } catch (error) {
       // Do nothing
     }
     try {
-      await DataUtil.buildStatefulPromise(cp2, pbs);
+      await DataUtil.execStatefulPromise(cp2, pbs);
     } catch (error) {
       // Do nothing
     }
@@ -121,14 +121,14 @@ describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Giv
   });
 });
 
-describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Given a "customPromise" and a "promiseStatus", it calls the "customPromise" function and saves the status inside promiseStatus and its result if it were cached', () => {
+describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Given a "customPromise" and a "promiseStatus", it calls the "customPromise" function and saves the status inside promiseStatus and its result if it were cached', () => {
   it('First execution - Simple OK: Given that "promiseStatus" is empty and customPromise contains "name" and "function" only, it resolves with "Resolved"', async () => {
     const pbs = new PromiseBatchStatus();
     const p: ICustomPromise<string> = {
       name: SIMPLE_TEST,
       function: PromiseUtil.buildFixedTimeNoParamPromise(0, true)
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.equal(DUMMY_MESSAGES.RESOLVED);
   });
 
@@ -140,7 +140,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -156,7 +156,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       thisArg: pu,
       function: pu.buildNoParamFixedTimePromise(0)
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.equal(DUMMY_MESSAGES.RESOLVED);
   });
 
@@ -171,7 +171,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -188,7 +188,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       function: pu.buildSingleParamFixedTimeCheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED]
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.equal(DUMMY_MESSAGES.RESOLVED);
   });
 
@@ -202,7 +202,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       function: pu.buildPassthroughPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED, 'dummy', 'another']
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.eql(p.args);
   });
 
@@ -218,7 +218,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -240,7 +240,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
         return PromiseUtil.dummyValidator(data);
       }
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(validatorExecuted).to.equal(true);
     expect(result).to.equal(DUMMY_MESSAGES.RESOLVED);
   });
@@ -262,7 +262,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -282,7 +282,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       validate: PromiseUtil.dummyValidator,
       doneCallback: data => (data += '2')
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.equal(`${DUMMY_MESSAGES.RESOLVED}2`);
   });
 
@@ -300,7 +300,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -320,7 +320,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
       doneCallback: data => (data += '1'),
       catchCallback: data => (data += '2')
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(result).to.equal(`${DUMMY_MESSAGES.RESOLVED}1`);
   });
 
@@ -339,7 +339,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -365,7 +365,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     };
     let result;
     try {
-      await DataUtil.buildStatefulPromise(p, pbs);
+      await DataUtil.execStatefulPromise(p, pbs);
     } catch (error) {
       result = error;
     }
@@ -399,7 +399,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
         return (data += '2');
       }
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(validatorExecuted).to.equal(true);
     expect(doneCallbackExecuted).to.equal(true);
     expect(catchCallbackExecuted).to.equal(false);
@@ -409,7 +409,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     doneCallbackExecuted = false;
     catchCallbackExecuted = false;
 
-    const result2 = await DataUtil.buildStatefulPromise(p, pbs);
+    const result2 = await DataUtil.execStatefulPromise(p, pbs);
     expect(validatorExecuted).to.equal(false);
     expect(doneCallbackExecuted).to.equal(false);
     expect(catchCallbackExecuted).to.equal(false);
@@ -442,7 +442,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
         return (data += '2');
       }
     };
-    const result = await DataUtil.buildStatefulPromise(p, pbs);
+    const result = await DataUtil.execStatefulPromise(p, pbs);
     expect(validatorExecuted).to.equal(true);
     expect(doneCallbackExecuted).to.equal(true);
     expect(catchCallbackExecuted).to.equal(false);
@@ -452,7 +452,7 @@ describe('DataUtil.buildStatefulPromise<T>(customPromise: ICustomPromise<T>, pro
     doneCallbackExecuted = false;
     catchCallbackExecuted = false;
 
-    const result2 = await DataUtil.buildStatefulPromise(p, pbs);
+    const result2 = await DataUtil.execStatefulPromise(p, pbs);
     expect(validatorExecuted).to.equal(false);
     expect(doneCallbackExecuted).to.equal(false);
     expect(catchCallbackExecuted).to.equal(false);
