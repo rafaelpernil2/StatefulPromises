@@ -21,11 +21,8 @@ const data = { test: 'Hello world' };
 describe('new PromiseBatchStatus(): Initializes the statusObject as an object with two properties Status and Cache as empty objects', () => {
   const pbs = new PromiseBatchStatus();
 
-  it(`Contains Status property as empty object`, async () => {
-    expect(pbs.statusObject).to.contain.keys(['Status']);
-  });
-  it(`Contains Cache property as empty object`, async () => {
-    expect(pbs.statusObject).to.contain.keys(['Cache']);
+  it(`Contains Status and Cache properties as empty objects`, async () => {
+    expect(pbs.statusObject).to.contain.keys(['Status', 'Cache']);
   });
 });
 
@@ -33,10 +30,8 @@ describe('PromiseBatchStatus.resetStatus(key: string): Given "key" as the first 
   const pbs = new PromiseBatchStatus();
   const key = 'key';
   pbs.resetStatus(key);
-  it(`Contains "${key}" property`, async () => {
+  it(`Contains "${key}" and "${key}${AFTER_CALLBACK}" properties`, async () => {
     checkKeyIs(pbs, key, resetStatus);
-  });
-  it(`Contains "${key}${AFTER_CALLBACK}" property`, async () => {
     checkKeyIs(pbs, `${key}${AFTER_CALLBACK}`, resetStatus);
   });
 });
