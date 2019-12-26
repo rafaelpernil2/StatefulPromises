@@ -38,6 +38,23 @@ const cpl: Array<ICustomPromise<unknown>> = [
   }
 ];
 
+describe('new PromiseBatch(statusObject?: PromiseBatchStatus): Initializes the statusObject as the given statusObject if provided or a new PromiseBatchStatus and customPromiseList and batchResponse as empty object', () => {
+  const pbs = new PromiseBatchStatus();
+
+  it('Given an statusObject is provided, it sets status object as that provided object and customPromiseList and batchResponse as empty object', async () => {
+    const pb = new PromiseBatch(pbs);
+    expect(pb.statusObject).to.eql(pbs);
+    expect(pb.customPromiseList).to.eql({});
+    expect(pb.batchResponse).to.eql({});
+  });
+  it('Given no statusObject is provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', async () => {
+    const pb = new PromiseBatch();
+    expect(pbs.statusObject).to.not.eql(pbs);
+    expect(pb.customPromiseList).to.eql({});
+    expect(pb.batchResponse).to.eql({});
+  });
+});
+
 describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>): Given a customPromise, if it does not exist already, it is added to customPromiseList', () => {
   it('Inserts customPromise inside customPromiseList given it was not added before', async () => {
     const pb = new PromiseBatch();

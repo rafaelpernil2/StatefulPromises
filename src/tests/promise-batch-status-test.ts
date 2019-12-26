@@ -18,6 +18,17 @@ const failedStatus = PROMISE_STATUS.REJECTED;
 const fulfilledStatus = PROMISE_STATUS.FULFILLED;
 const data = { test: 'Hello world' };
 
+describe('new PromiseBatchStatus(): Initializes the statusObject as an object with two properties Status and Cache as empty objects', () => {
+  const pbs = new PromiseBatchStatus();
+
+  it(`Contains Status property as empty object`, async () => {
+    expect(pbs.statusObject).to.contain.keys(['Status']);
+  });
+  it(`Contains Cache property as empty object`, async () => {
+    expect(pbs.statusObject).to.contain.keys(['Cache']);
+  });
+});
+
 describe('PromiseBatchStatus.resetStatus(key: string): Given "key" as the first parameter, it initializes two properties called "key" and "keyAfterCallback" with the value "status pending" using Knockout', () => {
   const pbs = new PromiseBatchStatus();
   const key = 'key';

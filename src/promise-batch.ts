@@ -112,6 +112,7 @@ export class PromiseBatch {
         }
         break;
       default:
+        throw new Error(ERROR_MSG.INVALID_BATCH_MODE);
         break;
     }
     return response;
