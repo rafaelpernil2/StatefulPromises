@@ -1,8 +1,10 @@
-import { ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
+import { BATCH_MODE, ERROR_MSG, NO_RESULT, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { PromiseBatchStatus } from './promise-batch-status';
 import { DataUtil } from './utils/data-util';
+
+type BatchMode = typeof BATCH_MODE[keyof typeof BATCH_MODE];
 
 export class PromiseBatch {
   public statusObject: PromiseBatchStatus;
@@ -34,17 +36,17 @@ export class PromiseBatch {
   }
 
   public async promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
-    return this.doPromiseAll(this.customPromiseList, concurrentLimit);
+    return this.doExecAll(this.customPromiseList, BATCH_MODE.ALL, concurrentLimit);
   }
 
   public async promiseAny(concurrentLimit?: number): Promise<IAnyObject> {
-    return this.doPromiseAny(this.customPromiseList, concurrentLimit);
+    return this.doExecAll(this.customPromiseList, BATCH_MODE.ANY, concurrentLimit);
   }
 
   public async retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
     const failedPromises = this.filterFulfilledPromises();
     this.statusObject.resetFailedPromises();
-    const result = await this.doPromiseAll(failedPromises, concurrentLimit);
+    const result = await this.doExecAll(failedPromises, BATCH_MODE.ALL, concurrentLimit);
     return result;
   }
 
@@ -91,22 +93,28 @@ export class PromiseBatch {
     return typeof nameOrCustomPromise === 'string' ? customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
   }
 
-  private async doPromiseAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<IAnyObject> {
+  private async doExecAll(customPromiseList: IAnyObject, mode: BatchMode, concurrentLimit?: number): Promise<IAnyObject> {
     await this.execAll(customPromiseList, concurrentLimit);
-    if (await this.isFulfilled()) {
-      return this.getBatchResponse();
-    } else {
-      throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
+    let response: IAnyObject = {};
+    switch (mode) {
+      case BATCH_MODE.ALL:
+        if (await this.isFulfilled()) {
+          response = this.getBatchResponse();
+        } else {
+          throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
+        }
+        break;
+      case BATCH_MODE.ANY:
+        if (await this.isCompleted()) {
+          response = this.getBatchResponse();
+        } else {
+          throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
+        }
+        break;
+      default:
+        break;
     }
-  }
-
-  private async doPromiseAny(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<IAnyObject> {
-    await this.execAll(customPromiseList, concurrentLimit);
-    if (await this.isCompleted()) {
-      return this.getBatchResponse();
-    } else {
-      throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
-    }
+    return response;
   }
 
   private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number) {

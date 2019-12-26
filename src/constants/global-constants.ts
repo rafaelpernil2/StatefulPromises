@@ -4,6 +4,11 @@ export const PROMISE_STATUS = {
   REJECTED: 'r'
 };
 
+export const BATCH_MODE = {
+  ALL: 'all',
+  ANY: 'any'
+};
+
 export const ERROR_MSG = {
   NO_CACHED_VALUE: 'There is not cached value for this promise',
   NO_PROMISE_FUNCTION: 'Cannot read function of promise',
