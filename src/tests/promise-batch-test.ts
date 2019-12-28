@@ -226,7 +226,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       FailPromise: 'Rejected'
     };
 
-    expect(pb.getBatchResponse()).to.eql(expectedRes);
+    expect(pb.batchResponse).to.eql(expectedRes);
     expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
   });
   it('Given a promise list with callbacks inside was previously added, one promise rejects and a positive concurrencyLimit is passed, it throws a rejection but contains the result of the promise either way', async () => {
@@ -282,7 +282,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       Promise2: `${DUMMY_MESSAGES.REJECTED}2`
     };
 
-    expect(pb.getBatchResponse()).to.eql(expectedRes);
+    expect(pb.batchResponse).to.eql(expectedRes);
     expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
   });
   it('Given a promise list with callbacks inside was previously added, one promise rejects and a positive concurrencyLimit is passed, when testing with a concurrency limit of 1 and 2, the second one takes less time', async () => {
@@ -349,9 +349,9 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
     };
 
-    expect(pb1.getBatchResponse()).to.eql(expectedRes);
+    expect(pb1.batchResponse).to.eql(expectedRes);
     expect(result1).to.eql(result2);
-    expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
+    expect(pb1.batchResponse).to.eql(pb2.batchResponse);
     expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
   });
 });
@@ -585,9 +585,9 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
     };
 
-    expect(pb1.getBatchResponse()).to.eql(expectedRes);
+    expect(pb1.batchResponse).to.eql(expectedRes);
     expect(result1).to.eql(result2);
-    expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
+    expect(pb1.batchResponse).to.eql(pb2.batchResponse);
     expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
   });
 });
@@ -705,26 +705,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
     expect(result).to.eql(expectedRes);
   });
 });
-describe('PromiseBatch.getBatchResponse(): Returns the batch response of previous calls to promiseAll or promiseAny', () => {
-  it('Given bathResponse is empty, it returns empty object', async () => {
-    const pbs = new PromiseBatchStatus();
-    const pb = new PromiseBatch(pbs);
-    expect(pb.getBatchResponse()).to.eql({});
-  });
-  it('Given bathResponse is not empty, it returns the result of the last promiseAll/promiseAny', async () => {
-    const pbs = new PromiseBatchStatus();
-    const pb = new PromiseBatch(pbs);
-    pb.addList(cpl);
-    const call = pb.promiseAny(3);
-    pb.finishAllPromises();
-    await call;
-    const expectedRes = {
-      ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
-      LoadJSON: PromiseUtil.NO_INPUT_PROVIDED
-    };
-    expect(pb.getBatchResponse()).to.eql(expectedRes);
-  });
-});
+
 describe('PromiseBatch.finishAllPromises(): Sets all properties ended in AferCallback inside statusObject to fulfilled', () => {
   it('Given statusObject is empty, it does nothing', async () => {
     const pbs = new PromiseBatchStatus();
@@ -772,7 +753,7 @@ describe('PromiseBatch.reset(): Resets batchResponse to an empty object and stat
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);
     pb.reset();
-    expect(pb.getBatchResponse()).to.eql({});
+    expect(pb.batchResponse).to.eql({});
     expect(pbs.getCacheList()).to.eql({});
     expect(pbs.getStatusList()).to.eql({});
   });
@@ -785,7 +766,7 @@ describe('PromiseBatch.reset(): Resets batchResponse to an empty object and stat
     pb.finishPromise(cpl[0]);
     await call;
     pb.reset();
-    expect(pb.getBatchResponse()).to.eql({});
+    expect(pb.batchResponse).to.eql({});
     expect(pbs.getCacheList()).to.eql({});
     expect(pbs.getStatusList()).to.eql({});
   });

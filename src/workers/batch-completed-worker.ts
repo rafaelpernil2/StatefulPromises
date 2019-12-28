@@ -23,7 +23,6 @@ import { SIMPLE_TEST } from '../utils/promise-util';
     // Do nothing
   }
   const checkCompleted = DataUtil.isPromiseBatchCompleted(pbs);
-
   pbs.notifyAsFinished(SIMPLE_TEST);
 
   if (process && process.send) {

@@ -50,10 +50,6 @@ export class PromiseBatch {
     return result;
   }
 
-  public getBatchResponse(): IAnyObject {
-    return this.batchResponse;
-  }
-
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
@@ -70,11 +66,11 @@ export class PromiseBatch {
     });
   }
 
-  public async isCompleted(): Promise<boolean> {
+  public async isBatchCompleted(): Promise<boolean> {
     return await DataUtil.isPromiseBatchCompleted(this.statusObject);
   }
 
-  public async isFulfilled(): Promise<boolean> {
+  public async isBatchFulfilled(): Promise<boolean> {
     return await DataUtil.isPromiseBatchFulfilled(this.statusObject);
   }
 
@@ -104,15 +100,15 @@ export class PromiseBatch {
     let response: IAnyObject = {};
     switch (mode) {
       case BATCH_MODE.ALL:
-        if (await this.isFulfilled()) {
-          response = this.getBatchResponse();
+        if (await this.isBatchFulfilled()) {
+          response = this.batchResponse;
         } else {
           throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
         }
         break;
       case BATCH_MODE.ANY:
-        if (await this.isCompleted()) {
-          response = this.getBatchResponse();
+        if (await this.isBatchCompleted()) {
+          response = this.batchResponse;
         } else {
           throw new Error(ERROR_MSG.SOME_PROMISE_STILL_RUNNING);
         }
