@@ -8,6 +8,10 @@ import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { DUMMY_MESSAGES, PromiseUtil } from '../utils/promise-util';
 
+const calcTotalTIme = (hrtime: number[]) => {
+  return hrtime[0] * 1e9 + hrtime[1];
+};
+
 const cp: ICustomPromise<object[]> = {
   name: 'GetSomething',
   function: PromiseUtil.buildFixedTimePromise(100),
@@ -287,7 +291,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise1',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(1000),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
         validate: (data: string) => {
@@ -348,7 +352,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     expect(pb1.getBatchResponse()).to.eql(expectedRes);
     expect(result1).to.eql(result2);
     expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
-    expect(tFirst1[1]).to.above(tSecond1[1]);
+    expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
   });
 });
 
@@ -525,7 +529,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise1',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(1000),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
         validate: (data: string) => {
@@ -584,7 +588,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     expect(pb1.getBatchResponse()).to.eql(expectedRes);
     expect(result1).to.eql(result2);
     expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
-    expect(tFirst1[1]).to.above(tSecond1[1]);
+    expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
   });
 });
 

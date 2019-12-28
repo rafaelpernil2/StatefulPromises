@@ -1,4 +1,4 @@
-import { BATCH_MODE, ERROR_MSG, NO_RESULT, PROMISE_STATUS } from './constants/global-constants';
+import { BATCH_MODE, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { PromiseBatchStatus } from './promise-batch-status';
@@ -30,7 +30,7 @@ export class PromiseBatch {
   }
 
   public exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): PromiseLike<T> {
-    const customPromise = this.getPromiseData(this.customPromiseList, nameOrCustomPromise);
+    const customPromise = DataUtil.getPromiseData(this.customPromiseList, nameOrCustomPromise);
     this.add(customPromise);
     return DataUtil.execStatefulPromise<T>(customPromise, this.statusObject);
   }
@@ -55,7 +55,7 @@ export class PromiseBatch {
   }
 
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
-    const promiseName = this.getPromiseName(nameOrCustomPromise);
+    const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
     if (!this.customPromiseList[promiseName].doneCallback) {
       this.statusObject.notifyAsFinished(promiseName);
@@ -85,12 +85,18 @@ export class PromiseBatch {
 
   // Private functions
 
-  private getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
-    return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
+  private isPromiseInBatch<T>(promiseName: string) {
+    return this.batchResponse.hasOwnProperty(promiseName);
   }
 
-  private getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>) {
-    return typeof nameOrCustomPromise === 'string' ? customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
+  private isPromiseReset<T>(promiseName: string) {
+    const promiseStatus = this.statusObject.observeStatus(promiseName);
+    return this.isPromiseInBatch(promiseName) && promiseStatus === PROMISE_STATUS.PENDING;
+  }
+
+  private shouldExecPromise<T>(customPromise: ICustomPromise<T>) {
+    const promiseName = DataUtil.getPromiseName(customPromise);
+    return !this.isPromiseInBatch(promiseName) || this.isPromiseReset(promiseName);
   }
 
   private async doExecAll(customPromiseList: IAnyObject, mode: BatchMode, concurrentLimit?: number): Promise<IAnyObject> {
@@ -113,7 +119,6 @@ export class PromiseBatch {
         break;
       default:
         throw new Error(ERROR_MSG.INVALID_BATCH_MODE);
-        break;
     }
     return response;
   }
@@ -151,24 +156,23 @@ export class PromiseBatch {
     if (!customPromise || !customPromise.function) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
-    // Save the previous status
-    const prevStatus = this.statusObject.observeStatus(customPromise.name);
-    // Call the executor and wait until promise ends
-    const promiseResult = await this.promiseTryCatch(customPromise);
-    // Add property to batchResponse the first time or if the previous status is not fulfilled, (i.e, we are retrying the failed ones and the status was reset)
-    if (!this.batchResponse.hasOwnProperty(customPromise.name) || prevStatus !== PROMISE_STATUS.FULFILLED) {
+    // Check if the stateful promise should be executed (i.e, it's the first time or it was reset)
+    if (this.shouldExecPromise(customPromise)) {
+      // Call the executor and wait until promise ends
+      const promiseResult = await this.promiseTryCatch(customPromise);
+      // Save the response to batchResponse
       this.batchResponse[customPromise.name] = promiseResult;
-    }
-    // If there any left promises to process...
-    if (awaitingPromiseList.length) {
-      // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
-      const nextPromiseName = awaitingPromiseList.shift();
-      if (nextPromiseName) {
-        const nextPromise = customPromiseList[nextPromiseName];
-        result = this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
+      // If there any left promises to process...
+      if (awaitingPromiseList.length) {
+        // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
+        const nextPromiseName = awaitingPromiseList.shift();
+        if (nextPromiseName) {
+          const nextPromise = customPromiseList[nextPromiseName];
+          result = this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
+        }
+      } else {
+        result = promiseResult;
       }
-    } else {
-      result = promiseResult;
     }
     return result;
   }

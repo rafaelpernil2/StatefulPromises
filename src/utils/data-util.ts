@@ -4,6 +4,14 @@ import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatchStatus } from '../promise-batch-status';
 export class DataUtil {
+  public static getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+    return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
+  }
+
+  public static getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>) {
+    return typeof nameOrCustomPromise === 'string' ? customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
+  }
+
   public static isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Promise<boolean> {
     // Initial check
     const arePromisesCompleted = Object.values(batchStatus.getStatusList()).every((value: ko.Observable<string>) => {

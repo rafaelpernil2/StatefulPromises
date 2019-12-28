@@ -8,6 +8,47 @@ import { DataUtil, ICustomPromise, PromiseBatch, PromiseBatchStatus } from '../i
 import { IAnyObject } from '../interfaces/i-any-object';
 import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
 
+describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the promise name', () => {
+  it('Given a promise name, which is a string, it returns that given string', async () => {
+    const promiseName = 'PromiseName';
+    const result = DataUtil.getPromiseName(promiseName);
+    expect(result).to.equal(promiseName);
+  });
+  it('Given a customPromise, it returns that given string', async () => {
+    const customPromise: ICustomPromise<string> = {
+      name: 'PromiseName',
+      function: () => Promise.resolve('Something')
+    };
+    const result = DataUtil.getPromiseName(customPromise);
+    expect(result).to.equal(customPromise.name);
+  });
+});
+
+describe('DataUtil.getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the customPromise itself or the one contained in customPromiseList with the given promiseName ', () => {
+  it('Given a promiseName and a customPromiseLIst, which is a string, it returns the customPromise saved as the property promiseName of customPromiseList', async () => {
+    const customPromise: ICustomPromise<string> = {
+      name: 'PromiseName',
+      function: () => Promise.resolve('Something')
+    };
+    const customPromiseList = {
+      [customPromise.name]: customPromise
+    };
+    const result = DataUtil.getPromiseData(customPromiseList, customPromise.name);
+    expect(result).to.equal(customPromise);
+  });
+  it('Given a customPromise, it returns that given customPromise', async () => {
+    const customPromise: ICustomPromise<string> = {
+      name: 'PromiseName',
+      function: () => Promise.resolve('Something')
+    };
+    const customPromiseList = {
+      [customPromise.name]: customPromise
+    };
+    const result = DataUtil.getPromiseData(customPromiseList, customPromise);
+    expect(result).to.equal(customPromise);
+  });
+});
+
 describe('DataUtil.isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Given a "batchStatus", it checks if all properties have a value different than pending and waits for changes until all are different than pending', () => {
   it('Given a set of two customPromises built under the same batchStatus, once they are completed this function returns true', async () => {
     const pbs = new PromiseBatchStatus();
