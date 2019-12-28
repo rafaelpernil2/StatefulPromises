@@ -156,8 +156,10 @@ export class PromiseBatch {
     if (this.shouldExecPromise(customPromise)) {
       // Call the executor and wait until promise ends
       const promiseResult = await this.promiseTryCatch(customPromise);
+
       // Save the response to batchResponse
       this.batchResponse[customPromise.name] = promiseResult;
+
       // If there any left promises to process...
       if (awaitingPromiseList.length) {
         // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
