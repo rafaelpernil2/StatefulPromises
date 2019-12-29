@@ -1,4 +1,4 @@
-import { BATCH_MODE, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
+import { BATCH_MODE, ERROR_MSG, NO_RESULT, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { PromiseBatchStatus } from './promise-batch-status';
@@ -29,10 +29,11 @@ export class PromiseBatch {
     });
   }
 
-  public exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): PromiseLike<T> {
+  public async exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): Promise<T> {
     const customPromise = DataUtil.getPromiseData(this.customPromiseList, nameOrCustomPromise);
     this.add(customPromise);
-    return DataUtil.execStatefulPromise<T>(customPromise, this.statusObject);
+    const result = await this.doExec<T>(customPromise);
+    return this.buildDataPromiseByStatus(customPromise, result);
   }
 
   public async promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
@@ -95,6 +96,37 @@ export class PromiseBatch {
     return !this.isPromiseInBatch(promiseName) || this.isPromiseReset(promiseName);
   }
 
+  private buildDataPromiseByStatus<T>(customPromise: ICustomPromise<T>, data: T | undefined): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const promiseStatus = this.statusObject.observeStatus(customPromise.name);
+      switch (promiseStatus) {
+        case PROMISE_STATUS.FULFILLED:
+          resolve(data);
+          break;
+        case PROMISE_STATUS.REJECTED:
+          reject(data);
+          break;
+        default:
+          reject(ERROR_MSG.PENDING_STATUS);
+          break;
+      }
+    });
+  }
+
+  private async doExec<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
+    let result;
+    // Check if the stateful promise should be executed (i.e, it's the first time or it was reset)
+    if (this.shouldExecPromise(customPromise)) {
+      // Call the executor and wait until promise ends
+      result = await this.execTryCatch(customPromise);
+      // Save the response to batchResponse
+      this.batchResponse[customPromise.name] = result;
+    } else {
+      result = NO_RESULT;
+    }
+    return result;
+  }
+
   private async doExecAll(customPromiseList: IAnyObject, mode: BatchMode, concurrentLimit?: number): Promise<IAnyObject> {
     await this.execAll(customPromiseList, concurrentLimit);
     let response: IAnyObject = {};
@@ -146,33 +178,23 @@ export class PromiseBatch {
     }
   }
 
-  private async execAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<IAnyObject> {
-    let result: Promise<IAnyObject> | IAnyObject = {};
+  private async execAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]) {
     const awaitingPromiseList = promiseNameList;
     if (!customPromise || !customPromise.function) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
-    // Check if the stateful promise should be executed (i.e, it's the first time or it was reset)
-    if (this.shouldExecPromise(customPromise)) {
-      // Call the executor and wait until promise ends
-      const promiseResult = await this.promiseTryCatch(customPromise);
 
-      // Save the response to batchResponse
-      this.batchResponse[customPromise.name] = promiseResult;
+    await this.doExec(customPromise);
 
-      // If there any left promises to process...
-      if (awaitingPromiseList.length) {
-        // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
-        const nextPromiseName = awaitingPromiseList.shift();
-        if (nextPromiseName) {
-          const nextPromise = customPromiseList[nextPromiseName];
-          result = this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
-        }
-      } else {
-        result = promiseResult;
+    // If there any left promises to process...
+    if (awaitingPromiseList.length) {
+      // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
+      const nextPromiseName = awaitingPromiseList.shift();
+      if (nextPromiseName) {
+        const nextPromise = customPromiseList[nextPromiseName];
+        this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
       }
     }
-    return result;
   }
 
   private filterFulfilledPromises() {
@@ -186,9 +208,9 @@ export class PromiseBatch {
     return result;
   }
 
-  private async promiseTryCatch<T>(customPromise: ICustomPromise<T>) {
+  private async execTryCatch<T>(customPromise: ICustomPromise<T>): Promise<T> {
     try {
-      return await this.exec<T>(customPromise);
+      return await DataUtil.execStatefulPromise<T>(customPromise, this.statusObject);
     } catch (error) {
       // Even if the promise is rejected, we save the error value;
       return error;

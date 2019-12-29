@@ -46,7 +46,7 @@ export class PromiseUtil {
       return new Promise<any>((resolve, reject) => {
         setTimeout(() => {
           if (input[0]) {
-            resolve(input);
+            resolve(JSON.parse(JSON.stringify(input)));
           } else {
             resolve(PromiseUtil.NO_INPUT_PROVIDED);
           }

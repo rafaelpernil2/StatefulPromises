@@ -94,18 +94,20 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
 });
 
 describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given the name of a promise inside this instance of PromiseBatch or a custom promise, it calls add(customPromise) and DataUtil.execStatefulPromise passing this customPromise as parameter and the inbuilt PromiseBatchStatus object "statusObject"', () => {
-  it('Given a promise name and a promise with that name is included in the PromiseBatch, it finds it and calls DataUtil.execStatefulPromise', async () => {
+  it('Given a promise name whose promise is included in the PromiseBatch, it finds it calls DataUtil.execStatefulPromise and stores the result at batchResponse', async () => {
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);
     pb.add(cp);
     const result = await pb.exec(cp.name);
-    expect(result).to.eql(cp.args);
+    expect(pb.batchResponse).to.eql({ GetSomething: [{ result: 'Resultd' }] });
+    expect(result).to.eql([{ result: 'Resultd' }]);
   });
-  it('Given a customPromise not included in the PromiseBatch, it adds it and calls DataUtil.execStatefulPromise', async () => {
+  it('Given a customPromise not included in the PromiseBatch, it adds it and calls DataUtil.execStatefulPromise  and stores the result at batchResponse', async () => {
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);
     const result = await pb.exec(cp);
-    expect(result).to.eql(cp.args);
+    expect(pb.batchResponse).to.eql({ GetSomething: [{ result: 'Resultd' }] });
+    expect(result).to.eql([{ result: 'Resultd' }]);
   });
 });
 
