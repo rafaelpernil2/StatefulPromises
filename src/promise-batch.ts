@@ -192,7 +192,7 @@ export class PromiseBatch {
       const nextPromiseName = awaitingPromiseList.shift();
       if (nextPromiseName) {
         const nextPromise = customPromiseList[nextPromiseName];
-        this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
+        await this.execAllRec(customPromiseList, nextPromise, awaitingPromiseList);
       }
     }
   }
