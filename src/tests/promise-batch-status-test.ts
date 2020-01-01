@@ -26,44 +26,52 @@ describe('new PromiseBatchStatus(): Initializes the statusObject as an object wi
   });
 });
 
-describe('PromiseBatchStatus.resetStatus(key: string): Given "key" as the first parameter, it initializes two properties called "key" and "keyAfterCallback" with the value "status pending" using Knockout', () => {
-  const pbs = new PromiseBatchStatus();
-  const key = 'key';
-  pbs.resetStatus(key);
-  it(`Contains "${key}" and "${key}${AFTER_CALLBACK}" properties`, async () => {
-    checkKeyIs(pbs, key, resetStatus);
-    checkKeyIs(pbs, `${key}${AFTER_CALLBACK}`, resetStatus);
-  });
-});
-
 describe('PromiseBatchStatus.initStatus(key: string): Given "init" as the first parameter, if the property "init" or "initAfterCallback" do not exits, it calls initStatus with given "init" parameter', () => {
   const key = 'init';
 
-  it('Calls resetStatus with no "init" property', async () => {
+  it('Sets init and initAfterCallback as pending given "init" property did not exist', async () => {
     const pbs = new PromiseBatchStatus();
     pbs.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.FULFILLED);
     pbs.initStatus(key);
     checkKeyIs(pbs, key, resetStatus);
     checkKeyIs(pbs, `${key}${AFTER_CALLBACK}`, resetStatus);
   });
-  it('Calls resetStatus with no "initAfterCallback" property', async () => {
+  it('Sets init and initAfterCallback as pending given "initAfterCallback" property did not exist', async () => {
     const pbs = new PromiseBatchStatus();
     pbs.statusObject.Status[`${key}`] = ko.observable(PROMISE_STATUS.FULFILLED);
     pbs.initStatus(key);
     checkKeyIs(pbs, key, resetStatus);
   });
-  it('Calls resetStatus with no "init" and "initAfterCallback" property', async () => {
+  it('Sets init and initAfterCallback as pending given "init" and "initAfterCallback" properties did not exist', async () => {
     const pbs = new PromiseBatchStatus();
     pbs.initStatus(key);
     checkKeyIs(pbs, key, resetStatus);
   });
-  it('Does not call resetStatus with "init" and "initAfterCallback" property', async () => {
+  it('Does not set init and initAfterCallback as pending given "init" and "initAfterCallback" properties existed', async () => {
     const pbs = new PromiseBatchStatus();
     pbs.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(fulfilledStatus);
     pbs.statusObject.Status[`${key}`] = ko.observable(fulfilledStatus);
     pbs.initStatus(key);
     checkKeyIs(pbs, key, fulfilledStatus);
     checkKeyIs(pbs, `${key}${AFTER_CALLBACK}`, fulfilledStatus);
+  });
+});
+
+describe('PromiseBatchStatus.resetStatus(key: string): Given "key" as the first parameter, it initializes two properties called "key" and "keyAfterCallback" with the value "status pending" using Knockout', () => {
+  const pbs = new PromiseBatchStatus();
+  const key = 'key';
+  it(`Given "${key}" and "${key}${AFTER_CALLBACK}" do not exist, this does nothing`, async () => {
+    pbs.resetStatus(key);
+    checkKeyDoesNotExist(pbs, key);
+    checkKeyDoesNotExist(pbs, `${key}${AFTER_CALLBACK}`);
+  });
+  it(`Given "${key}" and "${key}${AFTER_CALLBACK}" existed, they are reset to pending`, async () => {
+    pbs.initStatus(key);
+    pbs.updateStatus(key, PROMISE_STATUS.FULFILLED);
+    pbs.updateStatus(`${key}${AFTER_CALLBACK}`, PROMISE_STATUS.FULFILLED);
+    pbs.resetStatus(key);
+    checkKeyIs(pbs, key, resetStatus);
+    checkKeyIs(pbs, `${key}${AFTER_CALLBACK}`, resetStatus);
   });
 });
 

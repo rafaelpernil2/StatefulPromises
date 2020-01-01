@@ -75,6 +75,11 @@ export class PromiseBatch {
     return await DataUtil.isPromiseBatchFulfilled(this.statusObject);
   }
 
+  public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+    const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
+    this.statusObject.resetStatus(promiseName);
+  }
+
   public reset() {
     this.batchResponse = {};
     this.statusObject.reset();

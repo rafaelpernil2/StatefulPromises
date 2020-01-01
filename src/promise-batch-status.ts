@@ -16,13 +16,14 @@ export class PromiseBatchStatus {
 
   public initStatus(key: string) {
     if (!this.statusObject.Status[key] || !this.statusObject.Status[`${key}${AFTER_CALLBACK}`]) {
-      this.resetStatus(key);
+      this.createStatus(key);
     }
   }
 
   public resetStatus(key: string) {
-    this.statusObject.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
-    this.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.PENDING);
+    if (this.statusObject.Status[key] && this.statusObject.Status[`${key}${AFTER_CALLBACK}`]) {
+      this.createStatus(key);
+    }
   }
 
   public updateStatus(key: string, status: PromiseStatus) {
@@ -78,5 +79,12 @@ export class PromiseBatchStatus {
       Status: {},
       Cache: {}
     };
+  }
+
+  // Private functions
+
+  private createStatus(key: string) {
+    this.statusObject.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
+    this.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.PENDING);
   }
 }

@@ -750,6 +750,39 @@ describe('PromiseBatch.finishPromisee<T>(nameOrCustomPromise: string | ICustomPr
     expect(pbs.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
   });
 });
+
+// tslint:disable-next-line: max-line-length
+describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): Resets the status of a promise of the batch to pending by calling statusObject.resetStatus', () => {
+  it('Given the name or customPromise provided does not exist, it does nothing', async () => {
+    const pbs = new PromiseBatchStatus();
+    const pb = new PromiseBatch(pbs);
+    const promiseName = 'nonContained';
+    pb.addList(cpl);
+    const call = pb.promiseAll();
+    pb.finishAllPromises();
+    await call;
+    pb.resetPromise(promiseName);
+    Object.keys(pb.statusObject.getStatusList()).forEach(key => {
+      expect(pbs.observeStatus(key)).to.equal(PROMISE_STATUS.FULFILLED);
+    });
+  });
+  it('Given the name or customPromise provided exists in the promise batch, it resets the status of promiseName and promiseNameAfterCallback to Pending', async () => {
+    const pbs = new PromiseBatchStatus();
+    const pb = new PromiseBatch(pbs);
+    const promiseName = cpl[0].name;
+    const customPromise = cpl[1];
+    pb.addList(cpl);
+    const call = pb.promiseAll();
+    pb.finishAllPromises();
+    await call;
+    pb.resetPromise(promiseName);
+    pb.resetPromise(customPromise);
+    Object.keys(pb.statusObject.getStatusList()).forEach(key => {
+      expect(pbs.observeStatus(key)).to.equal(PROMISE_STATUS.PENDING);
+    });
+  });
+});
+
 describe('PromiseBatch.reset(): Resets batchResponse to an empty object and statusObject to an object with two properties Status and Cache as empty objects', () => {
   it('Given both are empty, it resets batchResponse and statusObject to an initial state', async () => {
     const pbs = new PromiseBatchStatus();
