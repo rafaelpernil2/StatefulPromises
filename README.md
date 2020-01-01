@@ -28,13 +28,13 @@ npm install --save stateful-promises
 
 ## Why?
 
-As described by MDN, a Promise has 3 possible states: Pending, Resolved and Rejected
+As described by MDN, a Promise has 3 possible states: Pending, Fulfilled and Rejected
 
 [![](https://mdn.mozillademos.org/files/8633/promises.png)]()
 
 But... We can't take a peek at a Promise status at any time without doing some hacking. 
 
-This design choice makes sense for many applications but many times we need to know which is the state of our Promise after the associated callback was executed, which one of our promise batch has been rejected or systematically wait until a set of promises has been completed while using the responses as each of them is resolved...
+This design choice makes sense for many applications but many times we need to know which is the state of our Promise after the associated callback was executed, which one of our promise batch has been rejected or systematically wait until a set of promises has been completed while using the responses as each of them is fulfilled...
 
 So you might be thinking... If I know I will need the state of my promise afterwards, I could store that status in a variable. 
 
