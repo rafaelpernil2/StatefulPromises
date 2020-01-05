@@ -44,25 +44,25 @@ export class PromiseBatch {
     return this.doExecAll(this.customPromiseList, BATCH_MODE.ANY, concurrentLimit);
   }
 
-  public async retryFailed(concurrentLimit?: number): Promise<IAnyObject> {
-    const failedPromises = this.filterFulfilledPromises();
-    this.statusObject.resetFailedPromises();
-    const result = await this.doExecAll(failedPromises, BATCH_MODE.ALL, concurrentLimit);
-    return result;
+  public async retryRejected(concurrentLimit?: number): Promise<IAnyObject> {
+    const rejectedPromises = this.getRejectedPromises();
+    this.statusObject.resetRejectedPromises();
+    return this.doExecAll(rejectedPromises, BATCH_MODE.ALL, concurrentLimit);
   }
 
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
-    if (!this.customPromiseList[promiseName].doneCallback) {
+    if (!this.customPromiseList[promiseName].hasOwnProperty('doneCallback')) {
       this.statusObject.notifyAsFinished(promiseName);
     }
   }
 
   public finishAllPromises() {
-    Object.keys(this.customPromiseList).forEach(promise => {
-      if (this.statusObject.getStatusList()[promise]) {
-        this.finishPromise(promise);
+    const statusList = this.statusObject.getStatusList();
+    Object.keys(this.customPromiseList).forEach(promiseName => {
+      if (statusList.hasOwnProperty(promiseName)) {
+        this.finishPromise(promiseName);
       }
     });
   }
@@ -140,7 +140,7 @@ export class PromiseBatch {
         if (await this.isBatchFulfilled()) {
           response = this.batchResponse;
         } else {
-          throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getFailedPromisesList()}`);
+          throw new Error(`${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.statusObject.getRejectedPromiseNames()}`);
         }
         break;
       case BATCH_MODE.ANY:
@@ -202,11 +202,11 @@ export class PromiseBatch {
     }
   }
 
-  private filterFulfilledPromises() {
-    const failedList = this.statusObject.getFailedPromisesList();
+  private getRejectedPromises() {
+    const rejectedNames = this.statusObject.getRejectedPromiseNames();
     const result: IAnyObject = {};
     Object.keys(this.customPromiseList).forEach(promiseName => {
-      if (failedList.includes(promiseName)) {
+      if (rejectedNames.includes(promiseName)) {
         result[promiseName] = this.customPromiseList[promiseName];
       }
     });

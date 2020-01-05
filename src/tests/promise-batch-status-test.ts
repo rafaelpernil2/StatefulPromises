@@ -157,7 +157,7 @@ describe('PromiseBatchStatus.getCacheList(): Returns the Cache field of statusOb
   });
 });
 
-describe('PromiseBatchStatus.getFailedPromisesList(): Returns the list of failed promises inside this batch', () => {
+describe('PromiseBatchStatus.getRejectedPromiseNames(): Returns the list of failed promises inside this batch', () => {
   const keyOne = 'keyOne';
   const keyTwo = 'keyTwo';
   const keyThree = 'keyThree';
@@ -171,16 +171,16 @@ describe('PromiseBatchStatus.getFailedPromisesList(): Returns the list of failed
     pbs.initStatus(keyThree);
     pbs.updateStatus(keyThree, fulfilledStatus);
 
-    expect(pbs.getFailedPromisesList()).to.eql([keyOne, keyTwo]);
+    expect(pbs.getRejectedPromiseNames()).to.eql([keyOne, keyTwo]);
   });
 
   it('Returns an empty array given the list of status is empty', async () => {
     const pbs = new PromiseBatchStatus();
-    expect(pbs.getFailedPromisesList()).to.eql([]);
+    expect(pbs.getRejectedPromiseNames()).to.eql([]);
   });
 });
 
-describe('PromiseBatchStatus.resetFailedPromises(): Resets the Status properties marked as rejected', () => {
+describe('PromiseBatchStatus.resetRejectedPromises(): Resets the Status properties marked as rejected', () => {
   const keyOne = 'keyOne';
   const keyTwo = 'keyTwo';
   const keyThree = 'keyThree';
@@ -194,9 +194,9 @@ describe('PromiseBatchStatus.resetFailedPromises(): Resets the Status properties
     pbs.initStatus(keyThree);
     pbs.updateStatus(keyThree, fulfilledStatus);
 
-    pbs.resetFailedPromises();
+    pbs.resetRejectedPromises();
 
-    expect(pbs.getFailedPromisesList()).to.eql([]);
+    expect(pbs.getRejectedPromiseNames()).to.eql([]);
   });
 });
 

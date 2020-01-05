@@ -14,7 +14,7 @@ const calcTotalTIme = (hrtime: number[]) => {
 
 const cp: ICustomPromise<object[]> = {
   name: 'GetSomething',
-  function: PromiseUtil.buildFixedTimePromise(100),
+  function: PromiseUtil.buildFixedTimePromise(0),
   thisArg: undefined,
   validate: data => {
     return true;
@@ -594,7 +594,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
   });
 });
 
-describe('PromiseBatch.retryFailed(): Given a series of promises failed when executing promiseAll or promiseAny, those are retried', () => {
+describe('PromiseBatch.retryRejected(): Given a series of promises failed when executing promiseAll or promiseAny, those are retried', () => {
   it('Given a set of promises with no one rejected, calls promiseAll() with an empty list and returns an the same list as before and the promise list is the same', async () => {
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);
@@ -639,7 +639,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
       const call = pb.promiseAll(5);
       pb.finishAllPromises();
       await call;
-      result = await pb.retryFailed();
+      result = await pb.retryRejected();
     } catch (error) {
       result = error;
     }
@@ -698,7 +698,7 @@ describe('PromiseBatch.retryFailed(): Given a series of promises failed when exe
     } catch (error) {
       // Fix the input
       newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
-      result = await pb.retryFailed();
+      result = await pb.retryRejected();
     }
     const expectedRes = {
       Promise1: `${DUMMY_MESSAGES.RESOLVED}1`,
@@ -728,7 +728,7 @@ describe('PromiseBatch.finishAllPromises(): Sets all properties ended in AferCal
     });
   });
 });
-describe('PromiseBatch.finishPromisee<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a name of a promise inside the instance of PromiseBatch or a customPromise itself, it sets the property nameAFterCallback in statusObject to fulfilled', () => {
+describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a name of a promise inside the instance of PromiseBatch or a customPromise itself, it sets the property nameAFterCallback in statusObject to fulfilled', () => {
   it('Given the name of a promise, it calls statusObj.notifyAsFinished passing that name as parameter', async () => {
     const pbs = new PromiseBatchStatus();
     const pb = new PromiseBatch(pbs);

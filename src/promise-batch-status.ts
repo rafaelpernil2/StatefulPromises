@@ -15,25 +15,25 @@ export class PromiseBatchStatus {
   }
 
   public initStatus(key: string) {
-    if (!this.statusObject.Status[key] || !this.statusObject.Status[`${key}${AFTER_CALLBACK}`]) {
+    if (!this.isStatusInitialized(key) || !this.isStatusInitialized(`${key}${AFTER_CALLBACK}`)) {
       this.createStatus(key);
     }
   }
 
   public resetStatus(key: string) {
-    if (this.statusObject.Status[key] && this.statusObject.Status[`${key}${AFTER_CALLBACK}`]) {
+    if (this.isStatusInitialized(key) && this.isStatusInitialized(`${key}${AFTER_CALLBACK}`)) {
       this.createStatus(key);
     }
   }
 
   public updateStatus(key: string, status: PromiseStatus) {
-    if (this.statusObject.Status[key] && this.statusObject.Status[key]()) {
+    if (this.isStatusInitialized(key) && this.isStatusValid(key, status)) {
       this.statusObject.Status[key](status);
     }
   }
 
   public observeStatus(key: string) {
-    if (this.statusObject.Status[key] && this.statusObject.Status[key]()) {
+    if (this.isStatusInitialized(key)) {
       return this.statusObject.Status[key]();
     }
   }
@@ -54,18 +54,12 @@ export class PromiseBatchStatus {
     return this.statusObject.Cache;
   }
 
-  public getFailedPromisesList(): string[] {
-    const failedList: string[] = [];
-    Object.keys(this.statusObject.Status).forEach(key => {
-      if (this.observeStatus(key) === PROMISE_STATUS.REJECTED) {
-        failedList.push(key);
-      }
-    });
-    return failedList;
+  public getRejectedPromiseNames(): string[] {
+    return Object.keys(this.statusObject.Status).filter(key => this.observeStatus(key) === PROMISE_STATUS.REJECTED);
   }
 
-  public resetFailedPromises() {
-    this.getFailedPromisesList().forEach(promiseName => {
+  public resetRejectedPromises() {
+    this.getRejectedPromiseNames().forEach(promiseName => {
       this.resetStatus(promiseName);
     });
   }
@@ -86,5 +80,14 @@ export class PromiseBatchStatus {
   private createStatus(key: string) {
     this.statusObject.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
     this.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.PENDING);
+  }
+
+  private isStatusValid(key: string, status: PromiseStatus) {
+    // AfterCallback status can't be rejected, it only can be Fulfilled or Pending
+    return !key.includes(AFTER_CALLBACK) || status !== PROMISE_STATUS.REJECTED;
+  }
+
+  private isStatusInitialized(key: string) {
+    return this.statusObject.Status.hasOwnProperty(key) && typeof this.statusObject.Status[key] === 'function';
   }
 }
