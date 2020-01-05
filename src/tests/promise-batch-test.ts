@@ -5,7 +5,7 @@ import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from '../constants/global-c
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
-import { PromiseBatchStatus } from '../promise-batch-status';
+import { PromiseBatchStatus } from '../utils/promise-batch-status';
 import { DUMMY_MESSAGES, PromiseUtil } from '../utils/promise-util';
 
 const calcTotalTIme = (hrtime: number[]) => {

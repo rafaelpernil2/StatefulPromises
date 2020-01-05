@@ -1,8 +1,8 @@
 import { BATCH_MODE, ERROR_MSG, NO_RESULT, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
-import { PromiseBatchStatus } from './promise-batch-status';
 import { DataUtil } from './utils/data-util';
+import { PromiseBatchStatus } from './utils/promise-batch-status';
 
 type BatchMode = typeof BATCH_MODE[keyof typeof BATCH_MODE];
 

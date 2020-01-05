@@ -7,8 +7,8 @@ import { NO_RESULT } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
-import { PromiseBatchStatus } from '../promise-batch-status';
 import { DataUtil } from '../utils/data-util';
+import { PromiseBatchStatus } from '../utils/promise-batch-status';
 import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
 
 describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the promise name', () => {

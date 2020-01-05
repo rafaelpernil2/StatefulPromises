@@ -1,6 +1,6 @@
 import ko from 'knockout';
-import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
-import { IAnyObject } from './interfaces/i-any-object';
+import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from '../constants/global-constants';
+import { IAnyObject } from '../interfaces/i-any-object';
 
 type PromiseStatus = typeof PROMISE_STATUS[keyof typeof PROMISE_STATUS];
 

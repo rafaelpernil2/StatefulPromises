@@ -2,7 +2,7 @@ import ko from 'knockout';
 import { NO_RESULT, PROMISE_STATUS } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
-import { PromiseBatchStatus } from '../promise-batch-status';
+import { PromiseBatchStatus } from './promise-batch-status';
 export class DataUtil {
   public static getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
     return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
