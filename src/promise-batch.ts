@@ -104,7 +104,7 @@ export class PromiseBatch {
     return this.isPromiseInBatch(promiseName) && promiseStatus === PROMISE_STATUS.PENDING;
   }
 
-  private shouldExecPromise<T>(customPromise: ICustomPromise<T>) {
+  private shouldSaveResult<T>(customPromise: ICustomPromise<T>) {
     const promiseName = DataUtil.getPromiseName(customPromise);
     return !this.isPromiseInBatch(promiseName) || this.isPromiseReset(promiseName);
   }
@@ -127,15 +127,13 @@ export class PromiseBatch {
   }
 
   private async doExec<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
-    let result;
-    // Check if the stateful promise should be executed (i.e, it's the first time or it was reset)
-    if (this.shouldExecPromise(customPromise)) {
-      // Call the executor and wait until promise ends
-      result = await this.execTryCatch(customPromise);
+    // Check if the stateful promise should be saved (i.e, it's the first time or it was reset)
+    const shouldSave = this.shouldSaveResult(customPromise);
+    // Call the executor and wait until promise ends
+    const result = await this.execTryCatch(customPromise);
+    if (shouldSave) {
       // Save the response to batchResponse
       this.batchResponse[customPromise.name] = result;
-    } else {
-      result = NO_RESULT;
     }
     return result;
   }
