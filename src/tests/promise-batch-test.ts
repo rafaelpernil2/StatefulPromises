@@ -309,7 +309,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise2',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(10),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
         validate: (data: string) => {
@@ -547,7 +547,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       {
         name: 'Promise2',
         thisArg: pu,
-        function: pu.buildSingleParamFixedTimeCheckedPromise(10),
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
         validate: (data: string) => {
