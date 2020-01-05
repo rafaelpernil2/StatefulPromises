@@ -4,8 +4,11 @@ import ko from 'knockout';
 import 'mocha';
 import * as path from 'path';
 import { NO_RESULT } from '../constants/global-constants';
-import { DataUtil, ICustomPromise, PromiseBatch, PromiseBatchStatus } from '../index';
 import { IAnyObject } from '../interfaces/i-any-object';
+import { ICustomPromise } from '../interfaces/i-custom-promise';
+import { PromiseBatch } from '../promise-batch';
+import { PromiseBatchStatus } from '../promise-batch-status';
+import { DataUtil } from '../utils/data-util';
 import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
 
 describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the promise name', () => {

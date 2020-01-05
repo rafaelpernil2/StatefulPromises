@@ -1,5 +1,4 @@
 /*tslint:disable:no-any */
-import { IAnyObject } from '../interfaces/i-any-object';
 
 export const DUMMY_MESSAGES = {
   RESOLVED: 'Resolved',

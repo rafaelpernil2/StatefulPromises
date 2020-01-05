@@ -1,4 +1,6 @@
-import { DataUtil, ICustomPromise, PromiseBatchStatus } from '../index';
+import { ICustomPromise } from '../interfaces/i-custom-promise';
+import { PromiseBatchStatus } from '../promise-batch-status';
+import { DataUtil } from '../utils/data-util';
 import { SIMPLE_TEST } from '../utils/promise-util';
 
 (async () => {

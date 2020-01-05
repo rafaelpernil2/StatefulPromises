@@ -40,9 +40,29 @@ So you might be thinking... If I know I will need the state of my promise afterw
 
 Yeah, okay, fair enough. But, what if you have a few dozen promises? You'd have to remember to save the status of each promise at their .done and .catch callbacks... Hello boilerplate code. This does not scale and it's prone to mistakes.
 
-StatefulPromises solves that problem with some more thought put into it
+StatefulPromises solves that problem with some more thought put into it:
 
+### Features
 
+#### PromiseBatch
+
+.promiseAll(concurrentLimit: number): Your classic Promise.all() but: 
+
+* saving all results no matter what
+* in an object format using the name of each promise as a key instead of an array
+* with a concurrency limit for specifying how many promises you want to execute at the same time
+
+.promiseAny(concurrentLimit: number): Same as promiseAll() but never throws an error. For providing seamless user experiences.
+
+.retryRejected(): If when calling promiseALl() or promiseAny(), some promise failed, you may retry those automatically with this method. Ideal for automatic error recovery
+
+.exec: For executing a single promise. Behaves exactly as promiseAll and promiseAny and is added to a the associated batch
+
+.isBatchCompleted
+
+.isBatchFulfilled
+
+#### PromiseBatch
 
 
 

@@ -7,14 +7,14 @@ import { DataUtil } from './utils/data-util';
 type BatchMode = typeof BATCH_MODE[keyof typeof BATCH_MODE];
 
 export class PromiseBatch {
-  public statusObject: PromiseBatchStatus;
   public customPromiseList: IAnyObject;
   public batchResponse: IAnyObject;
+  private statusObject: PromiseBatchStatus;
 
-  constructor(statusObject?: PromiseBatchStatus) {
-    this.statusObject = statusObject ?? new PromiseBatchStatus();
+  constructor() {
     this.customPromiseList = {};
     this.batchResponse = {};
+    this.statusObject = new PromiseBatchStatus();
   }
 
   public add<T>(customPromise: ICustomPromise<T>) {
@@ -78,6 +78,14 @@ export class PromiseBatch {
   public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     this.statusObject.resetStatus(promiseName);
+  }
+
+  public observeStatus(promiseName: string) {
+    return this.statusObject.observeStatus(promiseName);
+  }
+
+  public getStatusList(): IAnyObject {
+    return this.statusObject.getStatusList();
   }
 
   public reset() {
