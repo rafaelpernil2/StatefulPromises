@@ -1,4 +1,4 @@
-import { BATCH_MODE, ERROR_MSG, NO_RESULT, PROMISE_STATUS } from './constants/global-constants';
+import { BATCH_MODE, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 import { ICustomPromise } from './interfaces/i-custom-promise';
 import { DataUtil } from './utils/data-util';
