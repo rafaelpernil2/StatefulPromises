@@ -204,6 +204,9 @@ export class PromiseBatch {
 
     await this.doExec(customPromise);
 
+    // When executing promises in a batch, they are finished automatically
+    this.finishPromise(customPromise);
+
     // If there any left promises to process...
     if (awaitingPromiseList.length) {
       // The next promise is loaded and removed from promiseList and if it was provided successfully, it is queued
