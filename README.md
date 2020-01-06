@@ -75,7 +75,41 @@ StatefulPromises solves that problem with some more thought put into it:
 **Usage with Typescript**
 
 ```typescript
+import { PromiseBatch, ICustomPromise } from 'statefulpromises';
 
+const getAllComics: ICustomPromise<Comic[]> = {
+      name: 'GetAllComics',
+      function: () => this.comicProvider.all().toPromise(),
+      validate: (data) => Math.floor(Math.random() * 1000) % 2 === 0,
+      doneCallback: (data) => {
+        data[0].nombre = 'Modified by doneCallback';
+        return data;
+      },
+      catchCallback: (data) => {
+        data[0].nombre = 'Modified by catchCallback';
+        return data;
+      }
+    };
+    const promiseBatch = new PromiseBatch([getAllComics]);
+    promiseBatch.exec(getAllComics).then((res) => {
+      console.log('RESPONSE', res);
+      this.allComics = res;
+      this.comics = res;
+      sessionStorage.setItem('comics', JSON.stringify(this.allComics));
+      promiseBatch.finishPromise(getAllComics);
+    }, res => {
+      console.log('ERROR', res);
+      this.allComics = res;
+      this.comics = res;
+      sessionStorage.setItem('comics', JSON.stringify(this.allComics));
+      promiseBatch.finishPromise(getAllComics);
+    });
+    promiseBatch.isBatchCompleted().then((ready) => {
+      console.log('COMPLETED', ready);
+    });
+    promiseBatch.isBatchFulfilled().then((ready) => {
+      console.log('FULFILLED', ready);
+    });
 ```
 
 **Usage with Javascript**
