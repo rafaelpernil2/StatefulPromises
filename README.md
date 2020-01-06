@@ -56,14 +56,19 @@ StatefulPromises solves that problem with some more thought put into it:
 
 .retryRejected(): If when calling promiseALl() or promiseAny(), some promise failed, you may retry those automatically with this method. Ideal for automatic error recovery
 
-.exec: For executing a single promise. Behaves exactly as promiseAll and promiseAny and is added to a the associated batch
+.exec(): For executing a single promise. Behaves exactly as promiseAll and promiseAny and is added to a the associated batch
 
-.isBatchCompleted
+.isBatchCompleted(): Returns true once all the promises in the batch have been resolved or rejected
 
-.isBatchFulfilled
+.isBatchFulfilled(): Once the batch is completed, it returns true if all promises were resolved and false if some had been rejected
 
-#### PromiseBatch
+.observeStatus(): Allows you to access the current status of any of the promises of your batch
 
+.getStatusList(): Returns an object with the sttatuses of all promises in the batch. Each status property is a Knockout Observable variable
+
+
+#### Full test suite:
+* Almost a 100 automated tests ensure each commit works as intended
 
 
 ## Usage

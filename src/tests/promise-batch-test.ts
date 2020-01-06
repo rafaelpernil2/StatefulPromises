@@ -742,6 +742,38 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
   });
 });
 
+describe('PromiseBatch.getStatusList(): Returns the Status field of statusObject', () => {
+  const key = 'getStatusList';
+
+  it('Returns the Status field of statusObject', async () => {
+    const pb = new PromiseBatch();
+    pb.add(cp);
+    const call = pb.promiseAll();
+    pb.finishAllPromises();
+    await call;
+    expect(pb.getStatusList()).to.contain.keys([cp.name, `${cp.name}${AFTER_CALLBACK}`]);
+  });
+});
+
+describe('PromiseBatch.observeStatus(key: string): Given a "key", it return its status saved inside statusObject.Status.key', () => {
+  const key = 'observe';
+
+  it('Returns the status saved inside "key", given it was initialized', async () => {
+    const pb = new PromiseBatch();
+    pb.add(cp);
+    const call = pb.promiseAll();
+    pb.finishAllPromises();
+    await call;
+    expect(pb.observeStatus(cp.name)).to.be.eq(PROMISE_STATUS.FULFILLED);
+    expect(pb.observeStatus(`${cp.name}${AFTER_CALLBACK}`)).to.be.eq(PROMISE_STATUS.FULFILLED);
+  });
+
+  it('Does not return the status saved inside "key", given it was not initialized', async () => {
+    const pb = new PromiseBatch();
+    expect(pb.observeStatus(key)).to.be.eq(undefined);
+  });
+});
+
 describe('PromiseBatch.reset(): Resets batchResponse to an empty object and statusObject to an object with two properties Status and Cache as empty objects', () => {
   it('Given both are empty, it resets batchResponse and statusObject to an initial state', async () => {
     const pb = new PromiseBatch();
