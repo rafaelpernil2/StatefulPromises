@@ -75,6 +75,7 @@ StatefulPromises solves that problem with some more thought put into it:
 **Usage with Typescript**
 
 ```typescript
+
 ```
 
 **Usage with Javascript**

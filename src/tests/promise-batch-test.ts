@@ -40,11 +40,21 @@ const cpl: Array<ICustomPromise<unknown>> = [
   }
 ];
 
-describe('new PromiseBatch(): Initializes the statusObject as a new PromiseBatchStatus and customPromiseList and batchResponse as empty object', () => {
-  it('It sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', async () => {
+describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>): Initializes the statusObject as a new PromiseBatchStatus and customPromiseList and batchResponse as empty object', () => {
+  it('Given no customPromiseList provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', async () => {
     const pb = new PromiseBatch();
     expect(pb.getStatusList()).to.eql({});
     expect(pb.customPromiseList).to.eql({});
+    expect(pb.batchResponse).to.eql({});
+  });
+  it('Given a customPromiseList is provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', async () => {
+    const pb = new PromiseBatch(cpl);
+    expect(pb.getStatusList()).to.eql({});
+    const arrayified: IAnyObject[] = [];
+    Object.keys(pb.customPromiseList).forEach(promiseName => {
+      arrayified.push(pb.customPromiseList[promiseName]);
+    });
+    expect(arrayified).to.eql(cpl);
     expect(pb.batchResponse).to.eql({});
   });
 });

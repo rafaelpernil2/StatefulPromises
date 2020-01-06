@@ -11,10 +11,13 @@ export class PromiseBatch {
   public batchResponse: IAnyObject;
   private statusObject: PromiseBatchStatus;
 
-  constructor() {
+  constructor(customPromiseList?: Array<ICustomPromise<unknown>>) {
     this.customPromiseList = {};
     this.batchResponse = {};
     this.statusObject = new PromiseBatchStatus();
+    if (customPromiseList) {
+      this.addList(customPromiseList);
+    }
   }
 
   public add<T>(customPromise: ICustomPromise<T>) {
