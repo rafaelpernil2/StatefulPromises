@@ -93,6 +93,16 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>):
     expect(pb.batchResponse).to.eql({ GetSomething: [{ result: 'Resultd' }] });
     expect(result).to.eql([{ result: 'Resultd' }]);
   });
+  it(`Given a promise name whose promise is not included in the PromiseBatch, it throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, async () => {
+    const pb = new PromiseBatch();
+    let result;
+    try {
+      await pb.exec('NonExistent');
+    } catch (error) {
+      result = error;
+    }
+    expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
+  });
   it('Given a customPromise not included in the PromiseBatch, it adds it and calls DataUtil.execStatefulPromise  and stores the result at batchResponse', async () => {
     const pb = new PromiseBatch();
     const result = await pb.exec(cp);
@@ -701,6 +711,10 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     await call;
     expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
   });
+  it('Given the name of a promise not included in the batch, it does nothing', async () => {
+    const pb = new PromiseBatch();
+    pb.finishPromise('NonExistent');
+  });
   it('Given a custom promise, gets its name and calls statusObj.notifyAsFinished passing that name as parameter', async () => {
     const pb = new PromiseBatch();
     pb.add(cpl[0]);
@@ -709,6 +723,82 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     pb.finishPromise(cpl[0]);
     await call;
     expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
+  });
+});
+
+describe('PromiseBatch.isBatchCompleted(): Checks if all promises in the batch are not pending (resolved or rejected)', () => {
+  it('Given a set of two customPromises, once they are completed this function returns true', async () => {
+    const pb = new PromiseBatch();
+    const cp1: ICustomPromise<string> = {
+      name: 'Test1',
+      function: () => Promise.resolve('')
+    };
+    const cp2: ICustomPromise<string> = {
+      name: 'Test2',
+      function: () => Promise.reject('')
+    };
+    try {
+      const call1 = pb.exec(cp1);
+      const call2 = pb.exec(cp2);
+      pb.finishAllPromises();
+      await call1;
+      await call2;
+    } catch (error) {
+      // Do nothing
+    }
+    const checkCompleted = pb.isBatchCompleted();
+    const result = await checkCompleted;
+    expect(result).to.eq(true);
+  });
+});
+
+// tslint:disable-next-line: max-line-length
+describe('PromiseBatch.isBatchFulfilled(): Given a "batchStatus", it checks if all properties have a value equal to fulfilled and waits for changes until all are fulfilled', () => {
+  it('Given a set of two customPromises that fulfill, once they are completed this function returns true', async () => {
+    const pb = new PromiseBatch();
+    const cp1: ICustomPromise<string> = {
+      name: 'Test1',
+      function: () => Promise.resolve('')
+    };
+    const cp2: ICustomPromise<string> = {
+      name: 'Test2',
+      function: () => Promise.resolve('')
+    };
+    try {
+      const call1 = pb.exec(cp1);
+      const call2 = pb.exec(cp2);
+      pb.finishAllPromises();
+      await call1;
+      await call2;
+    } catch (error) {
+      // Do nothing
+    }
+    const checkCompleted = pb.isBatchCompleted();
+    const result = await checkCompleted;
+    expect(result).to.eq(true);
+  });
+  it('Given a set of two customPromises where one rejects, once they are completed this function returns false', async () => {
+    const pb = new PromiseBatch();
+    const cp1: ICustomPromise<string> = {
+      name: 'Test1',
+      function: () => Promise.resolve('')
+    };
+    const cp2: ICustomPromise<string> = {
+      name: 'Test2',
+      function: () => Promise.reject('')
+    };
+    try {
+      const call1 = pb.exec(cp1);
+      const call2 = pb.exec(cp2);
+      pb.finishAllPromises();
+      await call1;
+      await call2;
+    } catch (error) {
+      // Do nothing
+    }
+    const checkCompleted = pb.isBatchFulfilled();
+    const result = await checkCompleted;
+    expect(result).to.eq(false);
   });
 });
 

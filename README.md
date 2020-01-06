@@ -46,13 +46,13 @@ StatefulPromises solves that problem with some more thought put into it:
 
 #### PromiseBatch
 
-.promiseAll(concurrentLimit: number): Your classic Promise.all() but: 
+.promiseAll(concurrentLimit?: number): Your classic Promise.all() but: 
 
 * saving all results no matter what
 * in an object format using the name of each promise as a key instead of an array
 * with a concurrency limit for specifying how many promises you want to execute at the same time
 
-.promiseAny(concurrentLimit: number): Same as promiseAll() but never throws an error. For providing seamless user experiences.
+.promiseAny(concurrentLimit?: number): Same as promiseAll() but never throws an error. For providing seamless user experiences.
 
 .retryRejected(): If when calling promiseALl() or promiseAny(), some promise failed, you may retry those automatically with this method. Ideal for automatic error recovery
 

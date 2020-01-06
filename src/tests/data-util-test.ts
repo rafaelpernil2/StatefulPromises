@@ -11,6 +11,8 @@ import { DataUtil } from '../utils/data-util';
 import { PromiseBatchStatus } from '../utils/promise-batch-status';
 import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
 
+const timeout = 5000;
+
 describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the promise name', () => {
   it('Given a promise name, which is a string, it returns that given string', async () => {
     const promiseName = 'PromiseName';
@@ -86,11 +88,11 @@ describe('DataUtil.isPromiseBatchCompleted(batchStatus: PromiseBatchStatus): Giv
     // Use an observable variable to refresh the value once the worker finishes
     const isCompleted = ko.observable(false);
     child.on('message', data => isCompleted(data));
-    // Kill after 5000 ms
+    // Kill after timeout ms
     setTimeout(() => {
       child.kill();
-    }, 5000);
-    await PromiseUtil.setTimeout(5000);
+    }, timeout);
+    await PromiseUtil.setTimeout(timeout);
 
     expect(isCompleted()).to.eq(false);
   });
@@ -155,11 +157,11 @@ describe('DataUtil.isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Giv
     // Use an observable variable to refresh the value once the worker finishes
     const isFulfilled = ko.observable(false);
     child.on('message', data => isFulfilled(data));
-    // Kill after 5000 ms
+    // Kill after timeout ms
     setTimeout(() => {
       child.kill();
-    }, 5000);
-    await PromiseUtil.setTimeout(5000);
+    }, timeout);
+    await PromiseUtil.setTimeout(timeout);
 
     expect(isFulfilled()).to.eq(false);
   });

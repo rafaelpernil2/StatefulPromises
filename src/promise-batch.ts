@@ -31,9 +31,13 @@ export class PromiseBatch {
 
   public async exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): Promise<T> {
     const customPromise = DataUtil.getPromiseData(this.customPromiseList, nameOrCustomPromise);
-    this.add(customPromise);
-    const result = await this.doExec<T>(customPromise);
-    return this.buildDataPromiseByStatus(customPromise, result);
+    if (customPromise) {
+      this.add(customPromise);
+      const result = await this.doExec<T>(customPromise);
+      return this.buildDataPromiseByStatus(customPromise, result);
+    } else {
+      throw new Error(`${ERROR_MSG.INVALID_PROMISE_NAME}: ${nameOrCustomPromise}`);
+    }
   }
 
   public async promiseAll(concurrentLimit?: number): Promise<IAnyObject> {
@@ -53,7 +57,7 @@ export class PromiseBatch {
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
-    if (!this.customPromiseList[promiseName].hasOwnProperty('doneCallback')) {
+    if (this.customPromiseList.hasOwnProperty(promiseName) && !this.customPromiseList[promiseName].hasOwnProperty('doneCallback')) {
       this.statusObject.notifyAsFinished(promiseName);
     }
   }
