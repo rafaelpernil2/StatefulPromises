@@ -1,5 +1,5 @@
 {
-  "name": "statefulpromises",
+  "name": "stateful-promises",
   "version": "0.0.1",
   "description": "A project for creating stateful promise batches using Knockout.js",
   "main": "lib/index.js",

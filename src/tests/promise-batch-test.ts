@@ -6,7 +6,7 @@ import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
 import { DUMMY_MESSAGES, PromiseUtil } from '../utils/promise-util';
 
-const calcTotalTIme = (hrtime: number[]) => {
+const calcTotalTime = (hrtime: number[]) => {
   return hrtime[0] * 1e9 + hrtime[1];
 };
 
@@ -134,9 +134,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     const pb = new PromiseBatch();
     let result;
     try {
-      const call = pb.promiseAll(-3);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(-3);
     } catch (error) {
       result = error;
     }
@@ -146,9 +144,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     const pb = new PromiseBatch();
     let result;
     try {
-      const call = pb.promiseAll(0);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(0);
     } catch (error) {
       result = error;
     }
@@ -157,9 +153,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
   it('Given a promise list was previously added and no concurrencyLimit is passed, it returns the results in an object once finished', async () => {
     const pb = new PromiseBatch();
     pb.addList(cpl);
-    const call = pb.promiseAll();
-    pb.finishAllPromises();
-    const result = await call;
+    const result = await pb.promiseAll();
     const expectedRes = {
       ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
       LoadJSON: PromiseUtil.NO_INPUT_PROVIDED
@@ -169,9 +163,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
   it('Given a promise list was previously added and a positive concurrencyLimit is passed, it returns the results in an object once finished', async () => {
     const pb = new PromiseBatch();
     pb.addList(cpl);
-    const call = pb.promiseAll(3);
-    pb.finishAllPromises();
-    const result = await call;
+    const result = await pb.promiseAll(3);
     const expectedRes = {
       ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
       LoadJSON: PromiseUtil.NO_INPUT_PROVIDED
@@ -183,9 +175,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb.addList(cpl);
     let result;
     try {
-      const call = pb.promiseAll(-3);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(-3);
     } catch (error) {
       result = error;
     }
@@ -196,9 +186,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb.addList(cpl);
     let result;
     try {
-      const call = pb.promiseAll(0);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(0);
     } catch (error) {
       result = error;
     }
@@ -214,9 +202,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb.addList(newCpl);
     let result;
     try {
-      const call = pb.promiseAll(5);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(5);
     } catch (error) {
       result = error;
     }
@@ -270,9 +256,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb.addList(newCpl);
     let result;
     try {
-      const call = pb.promiseAll(5);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAll(5);
     } catch (error) {
       result = error;
     }
@@ -326,9 +310,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb1.addList(newCpl);
 
     const tFirst0 = process.hrtime();
-    const call1 = pb1.promiseAll(1);
-    pb1.finishAllPromises();
-    const result1 = await call1;
+    const result1 = await pb1.promiseAll(1);
     const tFirst1 = process.hrtime(tFirst0);
 
     const pb2 = new PromiseBatch();
@@ -336,9 +318,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     pb2.addList(newCpl);
 
     const tSecond0 = process.hrtime();
-    const call2 = pb2.promiseAll(2);
-    pb2.finishAllPromises();
-    const result2 = await call2;
+    const result2 = await pb2.promiseAll(2);
     const tSecond1 = process.hrtime(tSecond0);
 
     const expectedRes = {
@@ -349,7 +329,7 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
     expect(pb1.batchResponse).to.eql(expectedRes);
     expect(result1).to.eql(result2);
     expect(pb1.batchResponse).to.eql(pb2.batchResponse);
-    expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
+    expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
   });
 });
 
@@ -368,9 +348,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     const pb = new PromiseBatch();
     let result;
     try {
-      const call = pb.promiseAny(-3);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAny(-3);
     } catch (error) {
       result = error;
     }
@@ -380,9 +358,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     const pb = new PromiseBatch();
     let result;
     try {
-      const call = pb.promiseAny(0);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAny(0);
     } catch (error) {
       result = error;
     }
@@ -391,9 +367,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
   it('Given a promise list was previously added and no concurrencyLimit is passed, it returns the results in an object once finished', async () => {
     const pb = new PromiseBatch();
     pb.addList(cpl);
-    const call = pb.promiseAny();
-    pb.finishAllPromises();
-    const result = await call;
+    const result = await pb.promiseAny();
     const expectedRes = {
       ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
       LoadJSON: PromiseUtil.NO_INPUT_PROVIDED
@@ -403,9 +377,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
   it('Given a promise list was previously added and a positive concurrencyLimit is passed, it returns the results in an object once finished', async () => {
     const pb = new PromiseBatch();
     pb.addList(cpl);
-    const call = pb.promiseAny(3);
-    pb.finishAllPromises();
-    const result = await call;
+    const result = await pb.promiseAny(3);
     const expectedRes = {
       ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
       LoadJSON: PromiseUtil.NO_INPUT_PROVIDED
@@ -417,9 +389,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb.addList(cpl);
     let result;
     try {
-      const call = pb.promiseAny(-3);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAny(-3);
     } catch (error) {
       result = error;
     }
@@ -430,9 +400,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb.addList(cpl);
     let result;
     try {
-      const call = pb.promiseAny(0);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAny(0);
     } catch (error) {
       result = error;
     }
@@ -446,9 +414,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
       function: () => Promise.reject('Rejected')
     });
     pb.addList(newCpl);
-    const call = pb.promiseAny(5);
-    pb.finishAllPromises();
-    const result = await call;
+    const result = await pb.promiseAny(5);
     const expectedRes = {
       FailPromise: 'Rejected',
       ExternalAPI2: PromiseUtil.NO_INPUT_PROVIDED,
@@ -496,9 +462,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb.addList(newCpl);
     let result;
     try {
-      const call = pb.promiseAny(5);
-      pb.finishAllPromises();
-      result = await call;
+      result = await pb.promiseAny(5);
     } catch (error) {
       result = error;
     }
@@ -552,9 +516,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb1.addList(newCpl);
 
     const tFirst0 = process.hrtime();
-    const call1 = pb1.promiseAny(1);
-    pb1.finishAllPromises();
-    const result1 = await call1;
+    const result1 = await pb1.promiseAny(1);
     const tFirst1 = process.hrtime(tFirst0);
 
     const pb2 = new PromiseBatch();
@@ -562,9 +524,7 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     pb2.addList(newCpl);
 
     const tSecond0 = process.hrtime();
-    const call2 = pb2.promiseAny();
-    pb2.finishAllPromises();
-    const result2 = await call2;
+    const result2 = await pb2.promiseAny(2);
     const tSecond1 = process.hrtime(tSecond0);
 
     const expectedRes = {
@@ -575,11 +535,11 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
     expect(pb1.batchResponse).to.eql(expectedRes);
     expect(result1).to.eql(result2);
     expect(pb1.batchResponse).to.eql(pb2.batchResponse);
-    expect(calcTotalTIme(tFirst1)).to.above(calcTotalTIme(tSecond1));
+    expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
   });
 });
 
-describe('PromiseBatch.retryRejected(): Given a series of promises failed when executing promiseAll or promiseAny, those are retried', () => {
+describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series of promises failed when executing promiseAll or promiseAny, those are retried', () => {
   it('Given a set of promises with no one rejected, calls promiseAll() with an empty list and returns an the same list as before and the promise list is the same', async () => {
     const pb = new PromiseBatch();
     const pu = new PromiseUtil();
@@ -620,9 +580,7 @@ describe('PromiseBatch.retryRejected(): Given a series of promises failed when e
     pb.addList(newCpl);
     let result;
     try {
-      const call = pb.promiseAll(5);
-      pb.finishAllPromises();
-      await call;
+      await pb.promiseAll(5);
       result = await pb.retryRejected();
     } catch (error) {
       result = error;
@@ -634,8 +592,7 @@ describe('PromiseBatch.retryRejected(): Given a series of promises failed when e
     expect(result).to.eql(expectedRes);
     expect(pb.customPromiseList).eql({ [newCpl[0].name]: newCpl[0], [newCpl[1].name]: newCpl[1] });
   });
-  // tslint:disable-next-line: max-line-length
-  it('Given a set of promises with at least one rejected, calls promiseAll() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
+  it('Given a set of promises with at least one rejected, with no concurrentLimit, calls promiseAll() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
     const pb = new PromiseBatch();
     const pu = new PromiseUtil();
     const newCpl = [
@@ -675,9 +632,7 @@ describe('PromiseBatch.retryRejected(): Given a series of promises failed when e
     pb.addList(newCpl);
     let result;
     try {
-      const call = pb.promiseAll(5);
-      pb.finishAllPromises();
-      await call;
+      await pb.promiseAll(5);
     } catch (error) {
       // Fix the input
       newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
@@ -688,6 +643,192 @@ describe('PromiseBatch.retryRejected(): Given a series of promises failed when e
       Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
     };
     expect(result).to.eql(expectedRes);
+  });
+
+  it('Given a zero concurrencyLimit is passed, it throws an execption regarding the negative concurrencyLimit', async () => {
+    const pb = new PromiseBatch();
+    const pu = new PromiseUtil();
+    const newCpl = [
+      {
+        name: 'Promise1',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+        args: [DUMMY_MESSAGES.RESOLVED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      },
+      {
+        name: 'Promise2',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+        args: [DUMMY_MESSAGES.REJECTED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      }
+    ];
+    pb.addList(newCpl);
+    let result;
+    try {
+      await pb.promiseAll();
+    } catch (error) {
+      try {
+        await pb.retryRejected(0);
+      } catch (error) {
+        result = error;
+      }
+    }
+    expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+  });
+
+  it('Given a negative concurrencyLimit is passed, it throws an execption regarding the negative concurrencyLimit', async () => {
+    const pb = new PromiseBatch();
+    const pu = new PromiseUtil();
+    const newCpl = [
+      {
+        name: 'Promise1',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+        args: [DUMMY_MESSAGES.RESOLVED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      },
+      {
+        name: 'Promise2',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+        args: [DUMMY_MESSAGES.REJECTED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      }
+    ];
+    pb.addList(newCpl);
+    let result;
+    try {
+      await pb.promiseAll();
+    } catch (error) {
+      try {
+        await pb.retryRejected(-3);
+      } catch (error) {
+        result = error;
+      }
+    }
+    expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+  });
+
+  it('Given a set of promises with at least one rejected, with a concurrentLimit specified, the execution with a larger concurrentLimit takes less time', async () => {
+    const pu = new PromiseUtil();
+    const newCpl = [
+      {
+        name: 'Promise1',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+        args: [DUMMY_MESSAGES.REJECTED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      },
+      {
+        name: 'Promise2',
+        thisArg: pu,
+        function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+        args: [DUMMY_MESSAGES.REJECTED],
+        cached: false,
+        validate: (data: string) => {
+          return PromiseUtil.dummyValidator(data);
+        },
+        doneCallback: (data: string) => {
+          return (data += '1');
+        },
+        catchCallback: (data: string) => {
+          return (data += '2');
+        }
+      }
+    ];
+
+    const pb1 = new PromiseBatch();
+    pb1.addList(newCpl);
+    let result1;
+    let tFirst0;
+    let tFirst1;
+    try {
+      await pb1.promiseAll();
+    } catch (error) {
+      // Fix the input
+      newCpl[0].args = [DUMMY_MESSAGES.RESOLVED];
+      newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
+      tFirst0 = process.hrtime();
+      result1 = await pb1.retryRejected(1);
+      tFirst1 = process.hrtime(tFirst0);
+    }
+
+    // Break the input
+    newCpl[0].args = [DUMMY_MESSAGES.REJECTED];
+    newCpl[1].args = [DUMMY_MESSAGES.REJECTED];
+
+    const pb2 = new PromiseBatch();
+    pb2.addList(newCpl);
+    let result2;
+    let tSecond0;
+    let tSecond1;
+    try {
+      await pb2.promiseAll();
+    } catch (error) {
+      // Fix the input
+      newCpl[0].args = [DUMMY_MESSAGES.RESOLVED];
+      newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
+      tSecond0 = process.hrtime();
+      result2 = await pb2.retryRejected(2);
+      tSecond1 = process.hrtime(tSecond0);
+    }
+
+    const expectedRes = {
+      Promise1: `${DUMMY_MESSAGES.RESOLVED}1`,
+      Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
+    };
+    expect(result1).to.eql(expectedRes);
+    expect(result1).to.eql(result2);
+    if (tFirst1 && tSecond1) {
+      expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
+    }
   });
 });
 
@@ -816,9 +957,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
     const pb = new PromiseBatch();
     const promiseName = 'nonContained';
     pb.addList(cpl);
-    const call = pb.promiseAll();
-    pb.finishAllPromises();
-    await call;
+    await pb.promiseAll();
     pb.resetPromise(promiseName);
     Object.keys(pb.getStatusList()).forEach(key => {
       expect(pb.observeStatus(key)).to.equal(PROMISE_STATUS.FULFILLED);
@@ -829,9 +968,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
     const promiseName = cpl[0].name;
     const customPromise = cpl[1];
     pb.addList(cpl);
-    const call = pb.promiseAll();
-    pb.finishAllPromises();
-    await call;
+    await pb.promiseAll();
     pb.resetPromise(promiseName);
     pb.resetPromise(customPromise);
     Object.keys(pb.getStatusList()).forEach(key => {
@@ -846,9 +983,7 @@ describe('PromiseBatch.getStatusList(): Returns the Status field of statusObject
   it('Returns the Status field of statusObject', async () => {
     const pb = new PromiseBatch();
     pb.add(cp);
-    const call = pb.promiseAll();
-    pb.finishAllPromises();
-    await call;
+    await pb.promiseAll();
     expect(pb.getStatusList()).to.contain.keys([cp.name, `${cp.name}${AFTER_CALLBACK}`]);
   });
 });
@@ -859,9 +994,7 @@ describe('PromiseBatch.observeStatus(key: string): Given a "key", it return its 
   it('Returns the status saved inside "key", given it was initialized', async () => {
     const pb = new PromiseBatch();
     pb.add(cp);
-    const call = pb.promiseAll();
-    pb.finishAllPromises();
-    await call;
+    await pb.promiseAll();
     expect(pb.observeStatus(cp.name)).to.be.eq(PROMISE_STATUS.FULFILLED);
     expect(pb.observeStatus(`${cp.name}${AFTER_CALLBACK}`)).to.be.eq(PROMISE_STATUS.FULFILLED);
   });
