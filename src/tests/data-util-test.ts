@@ -5,8 +5,8 @@ import 'mocha';
 import * as path from 'path';
 import { NO_RESULT } from '../constants/global-constants';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
+import { PromiseBatchStatus } from '../promise-batch-status';
 import { DataUtil } from '../utils/data-util';
-import { PromiseBatchStatus } from '../utils/promise-batch-status';
 import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util';
 
 const timeout = 5000;
