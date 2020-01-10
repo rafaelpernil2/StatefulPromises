@@ -12,7 +12,11 @@ This project is an extension of ParallelPromises
 
 ## Table of Contents
 - [Installation](#installation)
-- [Why?](#why?)
+- [Why?](#Why?)
+- [Features](#Features)
+- [API](#API)
+  - [ICustomPromise\<T\>](#ICustomPromise\<T\>)
+  - [PromiseBatch](#PromiseBatch)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Credits](#credits)
