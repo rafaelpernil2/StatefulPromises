@@ -228,7 +228,6 @@ Example:
 const statusList = promiseBatch.getStatusList(): // statusList = { HelloPromise: ko.observable(...), GoodbyePromise: ko.observable(...) }
 ```
 
-
 ## Usage
 **Usage with Typescript**
 
