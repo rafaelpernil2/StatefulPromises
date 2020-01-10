@@ -25,3 +25,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pattern: './src/**/*.ts'
+      - name: Publish package
+        uses: mikeal/merge-release@v4.0.7
