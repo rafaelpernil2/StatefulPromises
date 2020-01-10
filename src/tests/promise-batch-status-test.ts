@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import ko from 'knockout';
 import 'mocha';
 import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from '../constants/global-constants';
-import { PromiseBatchStatus } from '../utils/promise-batch-status';
+import { PromiseBatchStatus } from '../promise-batch-status';
 
 const checkKeyIs = (pbs: PromiseBatchStatus, key: string, status: string) => {
   expect(pbs.statusObject.Status).to.contain.keys([`${key}`]);
