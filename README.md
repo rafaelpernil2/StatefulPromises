@@ -12,7 +12,11 @@ This project is an extension of ParallelPromises
 
 ## Table of Contents
 - [Installation](#installation)
-- [Why?](#why?)
+- [Why?](#Why?)
+- [Features](#Features)
+- [API](#API)
+  - [ICustomPromise\<T\>](#ICustomPromise\<T\>)
+  - [PromiseBatch](#PromiseBatch)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Credits](#credits)
@@ -57,6 +61,150 @@ StatefulPromises solves that problem with some more thought put into it.
 * Full type safety: Generic methods and interfaces to type your Promises accordingly
 
 ## API
+
+### ICustomPromise\<T\>
+
+#### name
+
+Specifies the name of the custom promise
+
+#### function(...args: any[]): PromiseLike\<T\>
+
+Specifies the function to be called, that has to return a `PromiseLike<T>`, being T the parameter of the interface
+
+These two properties are mandatory. Here is an example:
+```typescript
+const customPromise: ICustomPromise<string> = {
+  name: 'HelloPromise',
+  function: () => Promise.resolve('Hello World!')
+};
+```
+
+#### thisArg
+
+Specifies the context of the function
+
+Example:
+```typescript
+const customPromise: ICustomPromise<number> = {
+  name: 'CountStars',
+  thisArg: this.starProvider,
+  function: this.starProvider.getCount
+};
+```
+
+#### args
+
+Specifies the arguments to pass to the function
+
+Example:
+```typescript
+const customPromise: ICustomPromise<number> = {
+  name: 'GetStarByPlanetarySystem',
+  thisArg: this.starProvider,
+  args: [this.currentSystem],
+  function: this.starProvider.getStarBySystem
+};
+```
+
+#### cached
+
+Determines if posterior executions, the stateful promise execution returns an initialy cached value or `undefined`.
+When this value is not specified, it always returns `undefined` in posterior executions.
+
+Default behaviour:
+```typescript
+const uncachedPromise: ICustomPromise<string> = {
+  name: 'HelloPromiseUncached',
+  cached: false, // It's the same as not specifying it
+  function: () => Promise.resolve('Hello World!')
+};
+
+const uncached1 = await promiseBatch.exec(uncachedPromise); // uncached1 = 'Hello World!'
+const uncached2 = await promiseBatch.exec(uncachedPromise); // uncached2 = undefined
+```
+
+Example with `cached = true`:
+```typescript
+const promiseBatch = new PromiseBatch();
+
+const cachedPromise: ICustomPromise<string> = {
+  name: 'HelloPromiseCached',
+  cached: true,
+  function: () => Promise.resolve('Hello World!')
+};
+
+const cached1 = await promiseBatch.exec(cachedPromise); // cached1 = 'Hello World!'
+const cached2 = await promiseBatch.exec(cachedPromise); // cached2 = 'Hello World!'
+```
+
+
+#### validate?(response: T): boolean
+
+This function validates the response of the function to determine if it should be rejected. The `response` parameter cannot be modified.
+
+Example:
+```typescript
+const customPromise: ICustomPromise<string> = {
+  name: 'CheckLights',
+  thisArg: this.lightProvider,
+  function: this.lightProvider.checkLights,
+  validate: (response: string) => response === 'BLINK' || response === 'STROBE'
+};
+
+promiseBatch.exec(customPromise).then((response)=>{
+  // This block is executed if the response IS 'BLINK' or 'STROBE'
+},
+(error)=>{
+  // This block is executed if the response IS NOT 'BLINK' or 'STROBE'
+});
+
+```
+
+#### doneCallback?(response: T): T
+
+This function is executed when the promise is valid (validate returns true) and was fulfilled previously
+
+Example:
+```typescript
+const customPromise: ICustomPromise<string> = {
+  name: 'CheckLights',
+  thisArg: this.lightProvider,
+  function: this.lightProvider.checkLights,
+  validate: (response: string) => response === 'BLINK' || response === 'STROBE',
+  doneCallback: (response: string) => 'Light status: ' + response
+};
+// Let's imagine this function returns BLINK...
+promiseBatch.exec(customPromise).then((response)=>{
+  // response = 'Light status: BLINK'
+},
+(error)=>{
+  // This block is not executed
+});
+```
+
+#### catchCallback?(error: any): any
+
+This function is executed when the promise is invalid (validate returns false) or was rejected previously
+
+Example:
+```typescript
+const customPromise: ICustomPromise<string> = {
+  name: 'CheckLights',
+  thisArg: this.lightProvider,
+  function: this.lightProvider.checkLights,
+  validate: (response: string) => response === 'BLINK' || response === 'STROBE',
+  doneCallback: (response: string) => 'Light status: ' + response,
+  catchCallback: (error: string) => 'Failure: ' + error
+};
+// Let's imagine this function returns OFF...
+promiseBatch.exec(customPromise).then((response)=>{
+  // This block is not executed
+},
+(error)=>{
+  // error = 'Failure: OFF'
+});
+```
 
 ### PromiseBatch
 

@@ -6,6 +6,6 @@ export interface ICustomPromise<T> {
   cached?: boolean;
   function(...args: any[]): PromiseLike<T>;
   validate?(response: T): boolean;
-  doneCallback?(data: T): T;
+  doneCallback?(response: T): T;
   catchCallback?(error: any): any;
 }
