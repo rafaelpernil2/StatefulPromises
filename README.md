@@ -15,7 +15,7 @@ This project is an extension of ParallelPromises
 - [Why?](#Why?)
 - [Features](#Features)
 - [API](#API)
-  - [ICustomPromise\<T\>](#ICustomPromise\<T\>)
+  - [ICustomPromise\<T\>](#icustompromiset)
   - [PromiseBatch](#PromiseBatch)
 - [Usage](#usage)
 - [Contributing](#contributing)
