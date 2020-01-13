@@ -42,16 +42,16 @@ This design choice makes sense for many applications but many times we need to k
 
 So you might be thinking... If I know I will need the state of my promise afterwards, I could store that status in a variable. 
 
-Yeah, okay, fair enough. But, what if you have a few dozen promises? You'd have to remember to save the status of each promise at their .done and .catch callbacks... Hello boilerplate code. This does not scale and it's prone to mistakes.
+Yeah, okay, fair enough. But, what if you have a few dozen promises? You'd have to remember to save the status of each promise at their fulfilled and rejected callbacks... Hello boilerplate code. This does not scale and it's prone to mistakes.
 
 StatefulPromises solves that problem with some more thought put into it.
 
 ## Features
 
-* Execution of promise batches:
+* Execution of single-use promise batches:
   * One by one
   * Concurrently limited with promiseAll and promiseAny
-  * Optional result caching for independently defined callbacks
+  * Optional result caching for independently defined callbacks (when using exec, check [cached](#cached))
   * Independent promise validation
   * Independent done and catch callbacks
   * Access to promise status at any time
@@ -114,28 +114,26 @@ When this value is not specified, it always returns `undefined` in posterior exe
 
 Default behaviour:
 ```typescript
-const uncachedPromise: ICustomPromise<string> = {
+const customPromise: ICustomPromise<string> = {
   name: 'HelloPromiseUncached',
   cached: false, // It's the same as not specifying it
   function: () => Promise.resolve('Hello World!')
 };
 
-const uncached1 = await promiseBatch.exec(uncachedPromise); // uncached1 = 'Hello World!'
-const uncached2 = await promiseBatch.exec(uncachedPromise); // uncached2 = undefined
+const firstExec = await promiseBatch.exec(customPromise); // firstExec = 'Hello World!'
+const secondExec = await promiseBatch.exec(customPromise); // secondExec = undefined
 ```
 
 Example with `cached = true`:
 ```typescript
-const promiseBatch = new PromiseBatch();
-
-const cachedPromise: ICustomPromise<string> = {
+const customPromise: ICustomPromise<string> = {
   name: 'HelloPromiseCached',
   cached: true,
   function: () => Promise.resolve('Hello World!')
 };
 
-const cached1 = await promiseBatch.exec(cachedPromise); // cached1 = 'Hello World!'
-const cached2 = await promiseBatch.exec(cachedPromise); // cached2 = 'Hello World!'
+const firstExec = await promiseBatch.exec(customPromise); // firstExec = 'Hello World!'
+const secondExec = await promiseBatch.exec(customPromise); // secondExec = 'Hello World!'
 ```
 
 
@@ -211,7 +209,7 @@ promiseBatch.exec(customPromise).then((response)=>{
 Initialization:
 
 ```typescript
-const promiseBatch = new PromiseBatch(yourCustomPromiseArray); // The parameter is optional
+const promiseBatch = new PromiseBatch(yourCustomPromiseArray: Array<ICustomPromise<unknown>>); // The parameter is optional
 ```
 
 #### .add<T>(customPromise: ICustomPromise<T>)
@@ -362,9 +360,9 @@ Allows you to access the current status of any of the promises of your batch
 Example:
 ```typescript
 promiseBatch.promiseAll().then((response)=>{
-  promiseBatch.observeStatus('HelloPromise'); // status = 'f'
+  promiseBatch.observeStatus('HelloPromise'); // 'f'
 }); 
-const status = promiseBatch.observeStatus('HelloPromise'); // status = 'p' 
+promiseBatch.observeStatus('HelloPromise'); // 'p' 
 ```
 
 #### .getStatusList():
@@ -373,7 +371,7 @@ Returns an object with the sttatuses of all promises in the batch. Each status p
 
 Example:
 ```typescript
-const statusList = promiseBatch.getStatusList(): // statusList = { HelloPromise: ko.observable(...), GoodbyePromise: ko.observable(...) }
+const statusList = promiseBatch.getStatusList(): // statusList = { HelloPromise: ko.observable(...), ... }
 ```
 
 ## Usage
