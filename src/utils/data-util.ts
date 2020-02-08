@@ -93,15 +93,18 @@ export class DataUtil {
     promiseStatus.updateStatus(customPromise.name, data.status);
     const statusRelCallback = STATUS_CALLBACK_MAP[data.status];
     const callback = customPromise[statusRelCallback];
+    let hasToBeFinished = false;
     if (DataUtil.isDoneOrCatch(statusRelCallback) && callback) {
       data.response = callback.call(undefined, data.response);
+      hasToBeFinished = true;
     }
     // Execute finally callback
     if (customPromise.finallyCallback) {
       data.response = customPromise.finallyCallback(data.response);
+      hasToBeFinished = true;
     }
     // Notify as finished
-    if (customPromise.doneCallback || customPromise.catchCallback || customPromise.finallyCallback) {
+    if (hasToBeFinished) {
       promiseStatus.notifyAsFinished(customPromise.name);
     }
   }
