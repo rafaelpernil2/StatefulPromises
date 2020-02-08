@@ -315,6 +315,43 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
   });
 
   // tslint:disable-next-line: max-line-length
+  it('First execution - FinallyCallback OK: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate" and "finallyCallback", it resolves with "Resolved3"', async () => {
+    const pbs = new PromiseBatchStatus();
+    const pu = new PromiseUtil();
+    const p: ICustomPromise<string> = {
+      name: SIMPLE_TEST,
+      thisArg: pu,
+      function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
+      args: [DUMMY_MESSAGES.RESOLVED],
+      validate: PromiseUtil.dummyValidator,
+      finallyCallback: data => (data += '3')
+    };
+    const result = await DataUtil.execStatefulPromise(p, pbs);
+    expect(result).to.equal(`${DUMMY_MESSAGES.RESOLVED}3`);
+  });
+
+  // tslint:disable-next-line: max-line-length
+  it('First execution - FinallyCallback NOT-OK: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate" and "finallyCallback", it rejects with "Rejected3"', async () => {
+    const pbs = new PromiseBatchStatus();
+    const pu = new PromiseUtil();
+    const p: ICustomPromise<string> = {
+      name: SIMPLE_TEST,
+      thisArg: pu,
+      function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
+      args: [DUMMY_MESSAGES.REJECTED],
+      validate: PromiseUtil.dummyValidator,
+      finallyCallback: data => (data += '3')
+    };
+    let result;
+    try {
+      await DataUtil.execStatefulPromise(p, pbs);
+    } catch (error) {
+      result = error;
+    }
+    expect(result).to.equal(`${DUMMY_MESSAGES.REJECTED}3`);
+  });
+
+  // tslint:disable-next-line: max-line-length
   it('First execution - DoneCallback: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate" and "doneCallback", it resolves with "Resolved2"', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
@@ -352,7 +389,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
   });
 
   // tslint:disable-next-line: max-line-length
-  it('First execution - DoneCallback | CatchCallback: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it resolves with "Resolved1" given that the input is valid', async () => {
+  it('First execution - DoneCallback | CatchCallback | FinallyCallback : Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it resolves with "Resolved13" given that the input is valid', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
     const p: ICustomPromise<string> = {
@@ -362,14 +399,15 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       args: [DUMMY_MESSAGES.RESOLVED],
       validate: PromiseUtil.dummyValidator,
       doneCallback: data => (data += '1'),
-      catchCallback: data => (data += '2')
+      catchCallback: data => (data += '2'),
+      finallyCallback: data => (data += '3')
     };
     const result = await DataUtil.execStatefulPromise(p, pbs);
-    expect(result).to.equal(`${DUMMY_MESSAGES.RESOLVED}1`);
+    expect(result).to.equal(`${DUMMY_MESSAGES.RESOLVED}13`);
   });
 
   // tslint:disable-next-line: max-line-length
-  it('First execution - DoneCallback | CatchCallback NOT-OK: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it rejects with "Rejected2" given that the input is invalid', async () => {
+  it('First execution - DoneCallback | CatchCallback | FinallyCallback NOT-OK: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it rejects with "Rejected2" given that the input is invalid', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
     const p: ICustomPromise<string> = {
@@ -379,7 +417,8 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       args: [DUMMY_MESSAGES.REJECTED],
       validate: PromiseUtil.dummyValidator,
       doneCallback: data => (data += '1'),
-      catchCallback: data => (data += '2')
+      catchCallback: data => (data += '2'),
+      finallyCallback: data => (data += '3')
     };
     let result;
     try {
@@ -387,11 +426,11 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
     } catch (error) {
       result = error;
     }
-    expect(result).to.equal(`${DUMMY_MESSAGES.REJECTED}2`);
+    expect(result).to.equal(`${DUMMY_MESSAGES.REJECTED}23`);
   });
 
   // tslint:disable-next-line: max-line-length
-  it('First execution - DoneCallback | CatchCallback FULL REJECTION: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it rejects with "Rejected2" given that the promise rejects without executing validate', async () => {
+  it('First execution - DoneCallback | CatchCallback | FinallyCallback FULL REJECTION: Given that "promiseStatus" is empty and customPromise contains "name", "function", "thisArgs", "args", "validate", "doneCallback" and "catchCallback", it rejects with "Rejected2" given that the promise rejects without executing validate', async () => {
     const pbs = new PromiseBatchStatus();
     const pu = new PromiseUtil();
     let validatorExecuted = false;
@@ -405,7 +444,8 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
         return PromiseUtil.dummyValidator(data);
       },
       doneCallback: data => (data += '1'),
-      catchCallback: data => (data += '2')
+      catchCallback: data => (data += '2'),
+      finallyCallback: data => (data += '3')
     };
     let result;
     try {
@@ -414,7 +454,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       result = error;
     }
     expect(validatorExecuted).to.equal(false);
-    expect(result).to.equal(`${DUMMY_MESSAGES.REJECTED}2`);
+    expect(result).to.equal(`${DUMMY_MESSAGES.REJECTED}23`);
   });
 
   // tslint:disable-next-line: max-line-length

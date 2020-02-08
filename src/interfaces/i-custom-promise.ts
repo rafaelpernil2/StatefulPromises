@@ -8,4 +8,5 @@ export interface ICustomPromise<T> {
   validate?(response: T): boolean;
   doneCallback?(response: T): T;
   catchCallback?(error: any): any;
+  finallyCallback?(response: any): any;
 }

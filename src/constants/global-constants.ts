@@ -1,7 +1,15 @@
+import { IAnyObject } from 'src/interfaces/i-any-object';
+import { ICustomPromise } from '../interfaces/i-custom-promise';
+
 export const PROMISE_STATUS = {
   PENDING: 'p',
   FULFILLED: 'f',
   REJECTED: 'r'
+};
+
+export const STATUS_CALLBACK_MAP: { [key: string]: Partial<keyof ICustomPromise<IAnyObject>> } = {
+  [PROMISE_STATUS.FULFILLED]: 'doneCallback',
+  [PROMISE_STATUS.REJECTED]: 'catchCallback'
 };
 
 export const BATCH_MODE = {
