@@ -212,7 +212,7 @@ promiseBatch.exec(customPromise).then((response)=>{
 
 #### finallyCallback?(response: any): any
 
-This function is always executed after fullfillment or rejection.
+This function is always executed after fulfillment or rejection.
 
 Example:
 ```typescript
