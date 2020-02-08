@@ -56,7 +56,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks
   * Access to promise status at any time with [observeStatus](#observestatuspromisename-string)
 
-* Automated Test Suite: Almost a 100 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions)
+* Automated Test Suite: 100 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions)
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly
 
@@ -207,6 +207,30 @@ promiseBatch.exec(customPromise).then((response)=>{
 },
 (error)=>{
   // error = 'Failure: OFF'
+});
+```
+
+#### finallyCallback?(response: any): any
+
+This function is always executed after fullfillment or rejection.
+
+Example:
+```typescript
+const customPromise: ICustomPromise<string> = {
+  name: 'CheckLights',
+  thisArg: this.lightProvider,
+  function: this.lightProvider.checkLights,
+  validate: (response: string) => response === 'BLINK' || response === 'STROBE',
+  doneCallback: (response: string) => 'Light status: ' + response,
+  catchCallback: (error: string) => 'Failure: ' + error,
+  finallyCallback: (response: string) => 'Overall status: { ' + response + ' }'
+};
+// Let's imagine this function returns BLINK...
+promiseBatch.exec(customPromise).then((response)=>{
+  // response = 'Overall status: { Light status: BLINK }'
+},
+(error)=>{
+  // This block is not executed
 });
 ```
 

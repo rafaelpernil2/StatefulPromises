@@ -1,5 +1,5 @@
 import ko from 'knockout';
-import { NO_RESULT, PROMISE_STATUS } from '../constants/global-constants';
+import { NO_RESULT, PROMISE_STATUS, STATUS_CALLBACK_MAP } from '../constants/global-constants';
 import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatchStatus } from '../promise-batch-status';
@@ -65,7 +65,7 @@ export class DataUtil {
           // Validate response if a validator was provided
           DataUtil.execValidateIfProvided(customPromise, doneData);
           // Execute done or catch callback depending on the status in doneData
-          DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, doneData);
+          DataUtil.execCallbacks(customPromise, promiseStatus, doneData);
           // If cache is enabled, the response has to be saved in cache
           if (customPromise?.cached) {
             promiseStatus.addCachedResponse(customPromise.name, doneData.response);
@@ -82,31 +82,32 @@ export class DataUtil {
             status: PROMISE_STATUS.REJECTED,
             response: error
           };
-          DataUtil.execDoneOrCatchCallback(customPromise, promiseStatus, catchData);
+          DataUtil.execCallbacks(customPromise, promiseStatus, catchData);
           reject(catchData.response);
         }
       );
     });
   }
 
-  private static execDoneOrCatchCallback<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
+  private static execCallbacks<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
     promiseStatus.updateStatus(customPromise.name, data.status);
-    switch (data.status) {
-      case PROMISE_STATUS.FULFILLED:
-        if (customPromise.doneCallback) {
-          data.response = customPromise.doneCallback(data.response);
-          promiseStatus.notifyAsFinished(customPromise.name);
-        }
-        break;
-      case PROMISE_STATUS.REJECTED:
-        if (customPromise.catchCallback) {
-          data.response = customPromise.catchCallback(data.response);
-          promiseStatus.notifyAsFinished(customPromise.name);
-        }
-        break;
-      default:
-        break;
+    const statusRelCallback = STATUS_CALLBACK_MAP[data.status];
+    const callback = customPromise[statusRelCallback];
+    if (DataUtil.isDoneOrCatch(statusRelCallback) && callback) {
+      data.response = callback.call(undefined, data.response);
     }
+    // Execute finally callback
+    if (customPromise.finallyCallback) {
+      data.response = customPromise.finallyCallback(data.response);
+    }
+    // Notify as finished
+    if (customPromise.doneCallback || customPromise.catchCallback || customPromise.finallyCallback) {
+      promiseStatus.notifyAsFinished(customPromise.name);
+    }
+  }
+
+  private static isDoneOrCatch<T>(callback: keyof ICustomPromise<T>): callback is 'doneCallback' | 'catchCallback' {
+    return callback === 'doneCallback' || callback === 'catchCallback';
   }
 
   private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, doneData: IAnyObject) {
