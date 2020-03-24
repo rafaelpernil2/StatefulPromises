@@ -169,7 +169,7 @@ export class PromiseBatch {
     return response;
   }
 
-  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<void> {
+  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<any> {
     const promisesInProgress = [];
     const promiseList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
