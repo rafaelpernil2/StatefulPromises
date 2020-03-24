@@ -21,9 +21,8 @@ jobs:
       - run: npm install
       - name: Test NPM module
         run: npm test
-      - uses: stefanoeb/eslint-action@1.0.2
-        with:
-          files: ./src/
+      - name: eslint
+        uses: icrawl/action-eslint@v1
       - name: Publish package
         uses: mikeal/merge-release@v4.0.7
       - name: Publish tag on GitHub
