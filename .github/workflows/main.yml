@@ -21,11 +21,9 @@ jobs:
       - run: npm install
       - name: Test NPM module
         run: npm test
-      - name: TSLint checks
-        uses: mooyoul/tslint-actions@v1.1.1
+      - uses: stefanoeb/eslint-action@1.0.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pattern: './src/**/*.ts'
+          files: ./src/
       - name: Publish package
         uses: mikeal/merge-release@v4.0.7
       - name: Publish tag on GitHub
