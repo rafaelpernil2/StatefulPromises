@@ -1,4 +1,4 @@
-name: reviewdog
+name: pull-request
 on: [pull_request]
 jobs:
   eslint:
@@ -11,5 +11,5 @@ jobs:
         with:
           node-version: '10.x'
       - run: npm install
-      - name: eslint
+      - name: Run ESLint
         uses: icrawl/action-eslint@v1
