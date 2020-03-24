@@ -29,7 +29,7 @@ const cp: ICustomPromise<object[]> = {
   cached: true
 };
 
-const cpl: Array<ICustomPromise<unknown>> = [
+const cpl: ICustomPromise<unknown>[] = [
   {
     name: 'ExternalAPI2',
     function: PromiseUtil.buildFixedTimePromise(0)

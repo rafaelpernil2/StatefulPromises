@@ -11,7 +11,7 @@ export class PromiseBatch {
   public batchResponse: IAnyObject;
   private statusObject: PromiseBatchStatus;
 
-  constructor(customPromiseList?: Array<ICustomPromise<unknown>>) {
+  constructor(customPromiseList?: ICustomPromise<unknown>[]) {
     this.customPromiseList = {};
     this.batchResponse = {};
     this.statusObject = new PromiseBatchStatus();
@@ -26,7 +26,7 @@ export class PromiseBatch {
     }
   }
 
-  public addList(customPromiseList: Array<ICustomPromise<unknown>>) {
+  public addList(customPromiseList: ICustomPromise<unknown>[]) {
     customPromiseList.forEach(promise => {
       this.add(promise);
     });
