@@ -169,7 +169,7 @@ export class PromiseBatch {
     return response;
   }
 
-  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<any> {
+  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<void> {
     const promisesInProgress = [];
     const promiseList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
@@ -218,7 +218,7 @@ export class PromiseBatch {
     }
   }
 
-  private getRejectedPromises() {
+  private getRejectedPromises(): IAnyObject {
     const rejectedNames = this.statusObject.getRejectedPromiseNames();
     const result: IAnyObject = {};
     Object.keys(this.customPromiseList).forEach(promiseName => {

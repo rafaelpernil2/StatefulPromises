@@ -13,5 +13,3 @@ jobs:
       - run: npm install
       - name: eslint
         uses: icrawl/action-eslint@v1
-        #with:
-        #  custom-glob: 'src/**/*.ts' # only if a different glob is needed, default: src
