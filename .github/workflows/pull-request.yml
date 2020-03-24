@@ -12,4 +12,4 @@ jobs:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review # Change reporter.
           level: info
-          eslint_flags: './src/**/*.ts'
+          eslint_flags:  -c .eslintrc.js --ext .ts src/**/*.ts
