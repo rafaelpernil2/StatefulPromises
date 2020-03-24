@@ -218,7 +218,7 @@ export class PromiseBatch {
     }
   }
 
-  private getRejectedPromises(): IAnyObject {
+  private getRejectedPromises() {
     const rejectedNames = this.statusObject.getRejectedPromiseNames();
     const result: IAnyObject = {};
     Object.keys(this.customPromiseList).forEach(promiseName => {
