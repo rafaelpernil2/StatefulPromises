@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { expect } from 'chai';
 import 'mocha';
 import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from '../constants/global-constants';
@@ -6,15 +7,15 @@ import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
 import { DUMMY_MESSAGES, PromiseUtil } from '../utils/promise-util';
 
-const calcTotalTime = (hrtime: number[]) => {
+const calcTotalTime = (hrtime: number[]): number => {
   return hrtime[0] * 1e9 + hrtime[1];
 };
 
 const cp: ICustomPromise<object[]> = {
   name: 'GetSomething',
   function: PromiseUtil.buildFixedTimePromise(0),
-  thisArg: undefined,
-  validate: data => {
+  thisArg: null,
+  validate: () => {
     return true;
   },
   doneCallback: data => {
@@ -41,13 +42,13 @@ const cpl: ICustomPromise<unknown>[] = [
 ];
 
 describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>): Initializes the statusObject as a new PromiseBatchStatus and customPromiseList and batchResponse as empty object', () => {
-  it('Given no customPromiseList provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', async () => {
+  it('Given no customPromiseList provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', () => {
     const pb = new PromiseBatch();
     expect(pb.getStatusList()).to.eql({});
     expect(pb.customPromiseList).to.eql({});
     expect(pb.batchResponse).to.eql({});
   });
-  it('Given a customPromiseList is provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', async () => {
+  it('Given a customPromiseList is provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', () => {
     const pb = new PromiseBatch(cpl);
     expect(pb.getStatusList()).to.eql({});
     const arrayified: IAnyObject[] = [];
@@ -60,12 +61,12 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>): 
 });
 
 describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>): Given a customPromise, if it does not exist already, it is added to customPromiseList', () => {
-  it('Inserts customPromise inside customPromiseList given it was not added before', async () => {
+  it('Inserts customPromise inside customPromiseList given it was not added before', () => {
     const pb = new PromiseBatch();
     pb.add(cp);
     expect(pb.customPromiseList[cp.name]).to.eql(cp);
   });
-  it('Does not insert customPromise inside customPromiseList another is found with the same name', async () => {
+  it('Does not insert customPromise inside customPromiseList another is found with the same name', () => {
     const pb = new PromiseBatch();
     const cp2: ICustomPromise<number> = {
       name: 'GetSomething',
@@ -79,14 +80,14 @@ describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>): Given a customP
 });
 
 describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>): Given a "customPromiseList", each value is added to "customPromiseList"', () => {
-  it('Inserts each customPromise inside customPromiseList', async () => {
+  it('Inserts each customPromise inside customPromiseList', () => {
     const pb = new PromiseBatch();
     pb.addList(cpl);
     cpl.forEach(p => {
       expect(pb.customPromiseList[p.name]).to.eql(p);
     });
   });
-  it('Inserts no customPromise inside customPromiseList when an empty list is provided ', async () => {
+  it('Inserts no customPromise inside customPromiseList when an empty list is provided ', () => {
     const pb = new PromiseBatch();
     pb.addList([]);
     expect(pb.customPromiseList).to.eql({});
@@ -119,6 +120,7 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>):
   });
 });
 
+// eslint-disable-next-line max-len
 describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of customPromises contained in the instance of PromiseBatch and an optional concurrentLimit, it calls all promises and when all are finished, if all were fullfilled, it returns an object with all results', () => {
   it('Given no promise list was previously added and no concurrencyLimit is passed, it returns an empty object inmediately', async () => {
     const pb = new PromiseBatch();
@@ -226,13 +228,13 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -242,13 +244,13 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -278,13 +280,13 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -294,13 +296,13 @@ describe('PromiseBatch.promiseAll(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -432,13 +434,13 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -448,13 +450,13 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -483,13 +485,13 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -499,13 +501,13 @@ describe('PromiseBatch.promiseAny(concurrentLimit?: number): Given a list of cus
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -550,13 +552,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -566,13 +568,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -602,13 +604,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -618,13 +620,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -655,13 +657,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -671,13 +673,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -689,8 +691,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
     } catch (error) {
       try {
         await pb.retryRejected(0);
-      } catch (error) {
-        result = error;
+      } catch (suberror) {
+        result = suberror;
       }
     }
     expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
@@ -706,13 +708,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.RESOLVED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -722,13 +724,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(0),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -740,8 +742,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
     } catch (error) {
       try {
         await pb.retryRejected(-3);
-      } catch (error) {
-        result = error;
+      } catch (suberror) {
+        result = suberror;
       }
     }
     expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
@@ -756,13 +758,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       },
@@ -772,13 +774,13 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
         function: pu.buildSingleParamFixedTimeCheckedPromise(100),
         args: [DUMMY_MESSAGES.REJECTED],
         cached: false,
-        validate: (data: string) => {
+        validate: (data: string): boolean => {
           return PromiseUtil.dummyValidator(data);
         },
-        doneCallback: (data: string) => {
+        doneCallback: (data: string): string => {
           return (data += '1');
         },
-        catchCallback: (data: string) => {
+        catchCallback: (data: string): string => {
           return (data += '2');
         }
       }
@@ -833,7 +835,7 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number): Given a series o
 });
 
 describe('PromiseBatch.finishAllPromises(): Sets all properties ended in AferCallback inside statusObject to fulfilled', () => {
-  it('Given statusObject is empty, it does nothing', async () => {
+  it('Given statusObject is empty, it does nothing', () => {
     const pb = new PromiseBatch();
     pb.finishAllPromises();
     expect(pb.getStatusList()).to.eql({});
@@ -860,7 +862,7 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     await call;
     expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
   });
-  it('Given the name of a promise not included in the batch, it does nothing', async () => {
+  it('Given the name of a promise not included in the batch, it does nothing', () => {
     const pb = new PromiseBatch();
     pb.finishPromise('NonExistent');
   });
@@ -978,8 +980,6 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
 });
 
 describe('PromiseBatch.getStatusList(): Returns the Status field of statusObject', () => {
-  const key = 'getStatusList';
-
   it('Returns the Status field of statusObject', async () => {
     const pb = new PromiseBatch();
     pb.add(cp);
@@ -999,14 +999,14 @@ describe('PromiseBatch.observeStatus(key: string): Given a "key", it return its 
     expect(pb.observeStatus(`${cp.name}${AFTER_CALLBACK}`)).to.be.eq(PROMISE_STATUS.FULFILLED);
   });
 
-  it('Does not return the status saved inside "key", given it was not initialized', async () => {
+  it('Does not return the status saved inside "key", given it was not initialized', () => {
     const pb = new PromiseBatch();
     expect(pb.observeStatus(key)).to.be.eq(undefined);
   });
 });
 
 describe('PromiseBatch.reset(): Resets batchResponse to an empty object and statusObject to an object with two properties Status and Cache as empty objects', () => {
-  it('Given both are empty, it resets batchResponse and statusObject to an initial state', async () => {
+  it('Given both are empty, it resets batchResponse and statusObject to an initial state', () => {
     const pb = new PromiseBatch();
     pb.reset();
     expect(pb.batchResponse).to.eql({});

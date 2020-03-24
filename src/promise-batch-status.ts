@@ -1,5 +1,5 @@
 import ko from 'knockout';
-import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from './constants/global-constants';
+import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS, NO_RESULT } from './constants/global-constants';
 import { IAnyObject } from './interfaces/i-any-object';
 
 type PromiseStatus = typeof PROMISE_STATUS[keyof typeof PROMISE_STATUS];
@@ -14,35 +14,33 @@ export class PromiseBatchStatus {
     };
   }
 
-  public initStatus(key: string) {
+  public initStatus(key: string): void {
     if (!this.isStatusInitialized(key) || !this.isStatusInitialized(`${key}${AFTER_CALLBACK}`)) {
       this.createStatus(key);
     }
   }
 
-  public resetStatus(key: string) {
+  public resetStatus(key: string): void {
     if (this.isStatusInitialized(key) && this.isStatusInitialized(`${key}${AFTER_CALLBACK}`)) {
       this.createStatus(key);
     }
   }
 
-  public updateStatus(key: string, status: PromiseStatus) {
+  public updateStatus(key: string, status: PromiseStatus): void {
     if (this.isStatusInitialized(key) && this.isStatusValid(key, status)) {
       this.statusObject.Status[key](status);
     }
   }
 
-  public observeStatus(key: string) {
-    if (this.isStatusInitialized(key)) {
-      return this.statusObject.Status[key]();
-    }
+  public observeStatus(key: string): string {
+    return this.isStatusInitialized(key) ? this.statusObject.Status[key]() : NO_RESULT;
   }
 
-  public getCachedResponse(key: string) {
+  public getCachedResponse<T>(key: string): T {
     return this.statusObject.Cache[key] ?? ERROR_MSG.NO_CACHED_VALUE;
   }
 
-  public addCachedResponse<T>(key: string, data: T) {
+  public addCachedResponse<T>(key: string, data: T): void {
     this.statusObject.Cache[key] = data;
   }
 
@@ -58,17 +56,17 @@ export class PromiseBatchStatus {
     return Object.keys(this.statusObject.Status).filter(key => this.observeStatus(key) === PROMISE_STATUS.REJECTED);
   }
 
-  public resetRejectedPromises() {
+  public resetRejectedPromises(): void {
     this.getRejectedPromiseNames().forEach(promiseName => {
       this.resetStatus(promiseName);
     });
   }
 
-  public notifyAsFinished(key: string) {
+  public notifyAsFinished(key: string): void {
     this.updateStatus(`${key}${AFTER_CALLBACK}`, PROMISE_STATUS.FULFILLED);
   }
 
-  public reset() {
+  public reset(): void {
     this.statusObject = {
       Status: {},
       Cache: {}
@@ -77,17 +75,17 @@ export class PromiseBatchStatus {
 
   // Private functions
 
-  private createStatus(key: string) {
+  private createStatus(key: string): void {
     this.statusObject.Status[key] = ko.observable(PROMISE_STATUS.PENDING);
     this.statusObject.Status[`${key}${AFTER_CALLBACK}`] = ko.observable(PROMISE_STATUS.PENDING);
   }
 
-  private isStatusValid(key: string, status: PromiseStatus) {
+  private isStatusValid(key: string, status: PromiseStatus): boolean {
     // AfterCallback status can't be rejected, it only can be Fulfilled or Pending
     return !key.includes(AFTER_CALLBACK) || status !== PROMISE_STATUS.REJECTED;
   }
 
-  private isStatusInitialized(key: string) {
+  private isStatusInitialized(key: string): boolean {
     return this.statusObject.Status.hasOwnProperty(key) && typeof this.statusObject.Status[key] === 'function';
   }
 }
