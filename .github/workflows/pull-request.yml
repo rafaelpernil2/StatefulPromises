@@ -7,9 +7,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: eslint
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review # Change reporter.
-          level: info
-          eslint_flags: '-c .eslintrc.js --ext .ts src/**/*.ts'
+        uses: icrawl/action-eslint@v1
+        #with:
+        #  custom-glob: 'src/**/*.ts' # only if a different glob is needed, default: src
