@@ -28,6 +28,7 @@ export const ERROR_MSG = {
   INVALID_BATCH_MODE: 'This batch mode is invalid. You should not be seeing this'
 };
 
+// eslint-disable-next-line id-blacklist
 export const NO_RESULT = undefined;
 
 export const AFTER_CALLBACK = 'AfterCallback';

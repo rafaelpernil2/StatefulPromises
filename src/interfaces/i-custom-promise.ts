@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*tslint:disable:no-any */
 export interface ICustomPromise<T> {
   name: string;

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { expect } from 'chai';
 import * as cp from 'child_process';
 import ko from 'knockout';
@@ -12,12 +13,12 @@ import { DUMMY_MESSAGES, PromiseUtil, SIMPLE_TEST } from '../utils/promise-util'
 const timeout = 5000;
 
 describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the promise name', () => {
-  it('Given a promise name, which is a string, it returns that given string', async () => {
+  it('Given a promise name, which is a string, it returns that given string', () => {
     const promiseName = 'PromiseName';
     const result = DataUtil.getPromiseName(promiseName);
     expect(result).to.equal(promiseName);
   });
-  it('Given a customPromise, it returns that given string', async () => {
+  it('Given a customPromise, it returns that given string', () => {
     const customPromise: ICustomPromise<string> = {
       name: 'PromiseName',
       function: () => Promise.resolve('Something')
@@ -28,7 +29,7 @@ describe('DataUtil.getPromiseName<T>(nameOrCustomPromise: string | ICustomPromis
 });
 
 describe('DataUtil.getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>): Given a customPromise or a promise name, it returns the customPromise itself or the one contained in customPromiseList with the given promiseName ', () => {
-  it('Given a promiseName and a customPromiseLIst, which is a string, it returns the customPromise saved as the property promiseName of customPromiseList', async () => {
+  it('Given a promiseName and a customPromiseLIst, which is a string, it returns the customPromise saved as the property promiseName of customPromiseList', () => {
     const customPromise: ICustomPromise<string> = {
       name: 'PromiseName',
       function: () => Promise.resolve('Something')
@@ -39,7 +40,7 @@ describe('DataUtil.getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustom
     const result = DataUtil.getPromiseData(customPromiseList, customPromise.name);
     expect(result).to.equal(customPromise);
   });
-  it('Given a customPromise, it returns that given customPromise', async () => {
+  it('Given a customPromise, it returns that given customPromise', () => {
     const customPromise: ICustomPromise<string> = {
       name: 'PromiseName',
       function: () => Promise.resolve('Something')
@@ -243,7 +244,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
     const p: ICustomPromise<string> = {
       name: SIMPLE_TEST,
       thisArg: pu,
-      function: pu.buildPassthroughPromise(0),
+      function: pu.buildPassthroughPromise(),
       args: [DUMMY_MESSAGES.RESOLVED, 'dummy', 'another']
     };
     const result = await DataUtil.execStatefulPromise(p, pbs);
@@ -323,7 +324,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       finallyCallback: data => (data += '3')
     };
     const result = await DataUtil.execStatefulPromise(p, pbs);
@@ -339,7 +340,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.REJECTED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       finallyCallback: data => (data += '3')
     };
     let result;
@@ -360,7 +361,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       doneCallback: data => (data += '2')
     };
     const result = await DataUtil.execStatefulPromise(p, pbs);
@@ -376,7 +377,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.REJECTED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       catchCallback: data => (data += '2')
     };
     let result;
@@ -397,7 +398,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.RESOLVED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       doneCallback: data => (data += '1'),
       catchCallback: data => (data += '2'),
       finallyCallback: data => (data += '3')
@@ -415,7 +416,7 @@ describe('DataUtil.execStatefulPromise<T>(customPromise: ICustomPromise<T>, prom
       thisArg: pu,
       function: pu.buildSingleParamFixedTimeUncheckedPromise(0),
       args: [DUMMY_MESSAGES.REJECTED],
-      validate: PromiseUtil.dummyValidator,
+      validate: (data: string): boolean => PromiseUtil.dummyValidator(data),
       doneCallback: data => (data += '1'),
       catchCallback: data => (data += '2'),
       finallyCallback: data => (data += '3')

@@ -4,11 +4,11 @@ import { IAnyObject } from '../interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatchStatus } from '../promise-batch-status';
 export class DataUtil {
-  public static getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+  public static getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): string {
     return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
   }
 
-  public static getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>) {
+  public static getPromiseData<T>(customPromiseList: IAnyObject, nameOrCustomPromise: string | ICustomPromise<T>): ICustomPromise<T> {
     return typeof nameOrCustomPromise === 'string' ? customPromiseList[nameOrCustomPromise] : nameOrCustomPromise;
   }
 
@@ -35,7 +35,7 @@ export class DataUtil {
     });
   }
 
-  public static async isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus) {
+  public static async isPromiseBatchFulfilled(batchStatus: PromiseBatchStatus): Promise<boolean> {
     // First make sure all promises are completed
     await DataUtil.isPromiseBatchCompleted(batchStatus);
     // Then, check if they are fulfilled
@@ -44,10 +44,10 @@ export class DataUtil {
     });
   }
 
-  public static execStatefulPromise<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T> {
+  public static execStatefulPromise<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus): Promise<T | undefined> {
     // Return cached value if available
     if (promiseStatus.observeStatus(customPromise.name) === PROMISE_STATUS.FULFILLED) {
-      const response = customPromise?.cached ? promiseStatus.getCachedResponse(customPromise.name) : NO_RESULT;
+      const response = customPromise?.cached ? promiseStatus.getCachedResponse<T>(customPromise.name) : NO_RESULT;
       return Promise.resolve(response);
     }
     const args = customPromise && customPromise.args ? customPromise.args : [];
@@ -89,7 +89,7 @@ export class DataUtil {
     });
   }
 
-  private static execCallbacks<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject) {
+  private static execCallbacks<T>(customPromise: ICustomPromise<T>, promiseStatus: PromiseBatchStatus, data: IAnyObject): void {
     promiseStatus.updateStatus(customPromise.name, data.status);
     const statusRelCallback = STATUS_CALLBACK_MAP[data.status];
     const callback = customPromise[statusRelCallback];
@@ -113,7 +113,7 @@ export class DataUtil {
     return callback === 'doneCallback' || callback === 'catchCallback';
   }
 
-  private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, doneData: IAnyObject) {
+  private static execValidateIfProvided<T>(customPromise: ICustomPromise<T>, doneData: IAnyObject): void {
     // Validate response if a validator was provided
     if (customPromise.validate) {
       // If the variable is an object, it must be cloned to avoid modifications

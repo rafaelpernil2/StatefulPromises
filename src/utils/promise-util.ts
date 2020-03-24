@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*tslint:disable:no-any */
 
 export const DUMMY_MESSAGES = {
@@ -11,10 +12,10 @@ export const SIMPLE_TEST = 'FirstExecSimpleTest';
 export class PromiseUtil {
   public static NO_INPUT_PROVIDED = { res: 'No input provided' };
 
-  public static buildRandomTimePromise(timeMagnitude: number) {
+  public static buildRandomTimePromise(timeMagnitude: number): (input: any[]) => Promise<any> {
     const time = Math.ceil(Math.random() * 10) * timeMagnitude;
-    return (...input: any[]) => {
-      return new Promise<any>((resolve, reject) => {
+    return (...input: any[]): Promise<any> => {
+      return new Promise<any>(resolve => {
         setTimeout(() => {
           if (input[0]) {
             resolve(input);
@@ -26,8 +27,8 @@ export class PromiseUtil {
     };
   }
 
-  public static buildFixedTimeNoParamPromise(timeInMs: number, ok: boolean) {
-    return () => {
+  public static buildFixedTimeNoParamPromise(timeInMs: number, ok: boolean): () => Promise<any> {
+    return (): Promise<any> => {
       return new Promise<any>((resolve, reject) => {
         setTimeout(() => {
           if (ok) {
@@ -40,9 +41,9 @@ export class PromiseUtil {
     };
   }
 
-  public static buildFixedTimePromise(timeInMs: number) {
-    return (...input: any[]) => {
-      return new Promise<any>((resolve, reject) => {
+  public static buildFixedTimePromise(timeInMs: number): (input: any[]) => Promise<any> {
+    return (...input: any[]): Promise<any> => {
+      return new Promise<any>(resolve => {
         setTimeout(() => {
           if (input[0]) {
             resolve(JSON.parse(JSON.stringify(input)));
@@ -54,8 +55,8 @@ export class PromiseUtil {
     };
   }
 
-  public static buildSingleParamFixedTimePromise<T>(timeInMs: number) {
-    return (input: T) => {
+  public static buildSingleParamFixedTimePromise<T>(timeInMs: number): (input: T) => Promise<T> {
+    return (input: T): Promise<T> => {
       return new Promise<T>((resolve, reject) => {
         setTimeout(() => {
           if (input) {
@@ -68,9 +69,9 @@ export class PromiseUtil {
     };
   }
 
-  public static buildPassthroughPromise(timeInMs: number) {
-    return (...input: any[]) => {
-      return new Promise<any>((resolve, reject) => {
+  public static buildPassthroughPromise(): (input: any[]) => Promise<any> {
+    return (...input: any[]): Promise<any> => {
+      return new Promise<any>(resolve => {
         if (input[0]) {
           resolve(input);
         } else {
@@ -80,7 +81,7 @@ export class PromiseUtil {
     };
   }
 
-  public static setTimeout(timeInMs: number) {
+  public static setTimeout(timeInMs: number): Promise<void> {
     return new Promise<void>(resolve => {
       setTimeout(() => {
         resolve();
@@ -88,7 +89,7 @@ export class PromiseUtil {
     });
   }
 
-  public static dummyValidator(input: any) {
+  public static dummyValidator(input: any): boolean {
     return input === DUMMY_MESSAGES.RESOLVED;
   }
 
@@ -98,15 +99,15 @@ export class PromiseUtil {
     this.input = input;
   }
 
-  public buildSingleParamFixedTimePromise<T>(timeInMs: number) {
+  public buildSingleParamFixedTimePromise<T>(timeInMs: number): (input: T) => Promise<T> {
     return PromiseUtil.buildSingleParamFixedTimePromise<T>(timeInMs);
   }
-  public buildPassthroughPromise(timeInMs: number) {
-    return PromiseUtil.buildPassthroughPromise(timeInMs);
+  public buildPassthroughPromise(): (input: any[]) => Promise<any> {
+    return PromiseUtil.buildPassthroughPromise();
   }
 
-  public buildNoParamFixedTimePromise(timeInMs: number) {
-    return () => {
+  public buildNoParamFixedTimePromise(timeInMs: number): () => Promise<string> {
+    return (): Promise<string> => {
       return new Promise<string>((resolve, reject) => {
         setTimeout(() => {
           if (this.input === DUMMY_MESSAGES.RESOLVED) {
@@ -119,17 +120,17 @@ export class PromiseUtil {
     };
   }
 
-  public buildSingleParamFixedTimeUncheckedPromise(timeInMs: number) {
-    return (input: string) => {
-      return new Promise<string>((resolve, reject) => {
+  public buildSingleParamFixedTimeUncheckedPromise(timeInMs: number): (input: string) => Promise<string> {
+    return (input: string): Promise<string> => {
+      return new Promise<string>(resolve => {
         setTimeout(() => {
           resolve(input);
         }, timeInMs);
       });
     };
   }
-  public buildSingleParamFixedTimeCheckedPromise(timeInMs: number) {
-    return (input: string) => {
+  public buildSingleParamFixedTimeCheckedPromise(timeInMs: number): (input: string) => Promise<string> {
+    return (input: string): Promise<string> => {
       return new Promise<string>((resolve, reject) => {
         setTimeout(() => {
           if (input === DUMMY_MESSAGES.RESOLVED) {

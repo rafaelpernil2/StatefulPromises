@@ -3,7 +3,7 @@ import { PromiseBatchStatus } from '../promise-batch-status';
 import { DataUtil } from '../utils/data-util';
 import { SIMPLE_TEST } from '../utils/promise-util';
 
-(async () => {
+(async (): Promise<void> => {
   const pbs = new PromiseBatchStatus();
   const cp1: ICustomPromise<string> = {
     name: SIMPLE_TEST,

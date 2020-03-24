@@ -20,13 +20,13 @@ export class PromiseBatch {
     }
   }
 
-  public add<T>(customPromise: ICustomPromise<T>) {
+  public add<T>(customPromise: ICustomPromise<T>): void {
     if (!this.customPromiseList.hasOwnProperty(customPromise.name)) {
       this.customPromiseList[customPromise.name] = customPromise;
     }
   }
 
-  public addList(customPromiseList: ICustomPromise<unknown>[]) {
+  public addList(customPromiseList: ICustomPromise<unknown>[]): void {
     customPromiseList.forEach(promise => {
       this.add(promise);
     });
@@ -57,7 +57,7 @@ export class PromiseBatch {
     return this.doExecAll(rejectedPromises, BATCH_MODE.ALL, concurrentLimit);
   }
 
-  public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+  public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     // This makes sure the done callback is executed without race conditions
     if (this.customPromiseList.hasOwnProperty(promiseName) && !this.customPromiseList[promiseName].hasOwnProperty('doneCallback')) {
@@ -65,7 +65,7 @@ export class PromiseBatch {
     }
   }
 
-  public finishAllPromises() {
+  public finishAllPromises(): void {
     const statusList = this.statusObject.getStatusList();
     Object.keys(this.customPromiseList).forEach(promiseName => {
       if (statusList.hasOwnProperty(promiseName)) {
@@ -82,12 +82,12 @@ export class PromiseBatch {
     return await DataUtil.isPromiseBatchFulfilled(this.statusObject);
   }
 
-  public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>) {
+  public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
     this.statusObject.resetStatus(promiseName);
   }
 
-  public observeStatus(promiseName: string) {
+  public observeStatus(promiseName: string): string {
     return this.statusObject.observeStatus(promiseName);
   }
 
@@ -95,23 +95,23 @@ export class PromiseBatch {
     return this.statusObject.getStatusList();
   }
 
-  public reset() {
+  public reset(): void {
     this.batchResponse = {};
     this.statusObject.reset();
   }
 
   // Private functions
 
-  private isPromiseInBatch<T>(promiseName: string) {
+  private isPromiseInBatch<T>(promiseName: string): boolean {
     return this.batchResponse.hasOwnProperty(promiseName);
   }
 
-  private isPromiseReset<T>(promiseName: string) {
+  private isPromiseReset<T>(promiseName: string): boolean {
     const promiseStatus = this.statusObject.observeStatus(promiseName);
     return this.isPromiseInBatch(promiseName) && promiseStatus === PROMISE_STATUS.PENDING;
   }
 
-  private shouldSaveResult<T>(customPromise: ICustomPromise<T>) {
+  private shouldSaveResult<T>(customPromise: ICustomPromise<T>): boolean {
     const promiseName = DataUtil.getPromiseName(customPromise);
     return !this.isPromiseInBatch(promiseName) || this.isPromiseReset(promiseName);
   }
@@ -169,7 +169,7 @@ export class PromiseBatch {
     return response;
   }
 
-  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number) {
+  private async execAll(customPromiseList: IAnyObject, concurrentLimit?: number): Promise<void> {
     const promisesInProgress = [];
     const promiseList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
@@ -177,7 +177,7 @@ export class PromiseBatch {
       this.statusObject.initStatus(promiseName);
     });
     // Throw error if the concurrentLimit has an invalid value
-    if (concurrentLimit !== undefined && concurrentLimit <= 0) {
+    if (typeof concurrentLimit !== 'undefined' && concurrentLimit <= 0) {
       throw new Error(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     }
     // Set concurrent limit if provided and make sure it is within the amount of promises to process
@@ -196,9 +196,9 @@ export class PromiseBatch {
     }
   }
 
-  private async execAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]) {
+  private async execAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<void> {
     const awaitingPromiseList = promiseNameList;
-    if (!customPromise || !customPromise.function) {
+    if (!customPromise || !customPromise.hasOwnProperty('function')) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
 
@@ -218,7 +218,7 @@ export class PromiseBatch {
     }
   }
 
-  private getRejectedPromises() {
+  private getRejectedPromises(): IAnyObject {
     const rejectedNames = this.statusObject.getRejectedPromiseNames();
     const result: IAnyObject = {};
     Object.keys(this.customPromiseList).forEach(promiseName => {
@@ -229,7 +229,7 @@ export class PromiseBatch {
     return result;
   }
 
-  private async execTryCatch<T>(customPromise: ICustomPromise<T>): Promise<T> {
+  private async execTryCatch<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
     try {
       return await DataUtil.execStatefulPromise<T>(customPromise, this.statusObject);
     } catch (error) {
