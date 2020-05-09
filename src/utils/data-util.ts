@@ -109,7 +109,7 @@ export class DataUtil {
     }
   }
 
-  private static isDoneOrCatch<T>(callback: keyof ICustomPromise<T>): callback is 'doneCallback' | 'catchCallback' {
+  private static isDoneOrCatch<T>(callback: Partial<keyof ICustomPromise<T>>): callback is 'doneCallback' | 'catchCallback' {
     return callback === 'doneCallback' || callback === 'catchCallback';
   }
 
