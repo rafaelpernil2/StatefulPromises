@@ -15,17 +15,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '10.x'
-      - run: npm install
-      - name: Test NPM module
-        run: npm test
-      - name: Run ESLint
-        uses: icrawl/action-eslint@v1
-      - name: "Publish on NPM"
-        uses: actions/setup-node@v1
-        with:
-          node-version: '10.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm publish
+      - run: npm install
+      - name: "Publish on NPM"
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: Publish tag on GitHub
