@@ -1,4 +1,3 @@
-import { IAnyObject } from 'src/interfaces/i-any-object';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 
 export const PROMISE_STATUS = {
@@ -7,7 +6,7 @@ export const PROMISE_STATUS = {
   REJECTED: 'r'
 };
 
-export const STATUS_CALLBACK_MAP: { [key: string]: Partial<keyof ICustomPromise<IAnyObject>> } = {
+export const STATUS_CALLBACK_MAP: { [key: string]: Partial<keyof ICustomPromise<unknown>> } = {
   [PROMISE_STATUS.FULFILLED]: 'doneCallback',
   [PROMISE_STATUS.REJECTED]: 'catchCallback'
 };

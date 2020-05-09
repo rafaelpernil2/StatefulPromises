@@ -59,8 +59,9 @@ export class PromiseBatch {
 
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
     const promiseName = DataUtil.getPromiseName(nameOrCustomPromise);
-    // This makes sure the done callback is executed without race conditions
-    if (this.customPromiseList.hasOwnProperty(promiseName) && !this.customPromiseList[promiseName].hasOwnProperty('doneCallback')) {
+    // This makes sure the done and catch callbacks are executed without race conditions
+    const propertiesToCheck: Partial<keyof ICustomPromise<unknown>>[] = ['doneCallback', 'catchCallback'];
+    if (this.customPromiseList.hasOwnProperty(promiseName) && !propertiesToCheck.some(property => this.customPromiseList[promiseName].hasOwnProperty(property))) {
       this.statusObject.notifyAsFinished(promiseName);
     }
   }
@@ -198,7 +199,8 @@ export class PromiseBatch {
 
   private async execAllRec<T>(customPromiseList: IAnyObject, customPromise: ICustomPromise<T>, promiseNameList: string[]): Promise<void> {
     const awaitingPromiseList = promiseNameList;
-    if (!customPromise || !customPromise.hasOwnProperty('function')) {
+    const functionProperty: Partial<keyof ICustomPromise<unknown>> = 'function';
+    if (!customPromise || !customPromise.hasOwnProperty(functionProperty)) {
       throw new Error(ERROR_MSG.NO_PROMISE_FUNCTION);
     }
 
