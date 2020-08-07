@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
 import { expect } from 'chai';
 import 'mocha';
-import { AFTER_CALLBACK, ERROR_MSG, PROMISE_STATUS } from '../constants/global-constants';
-import { IAnyObject } from '../interfaces/i-any-object';
+import { AFTER_CALLBACK, ERROR_MSG } from '../constants/global-constants';
 import { ICustomPromise } from '../interfaces/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
 import { DUMMY_MESSAGES, PromiseUtil } from '../utils/promise-util';
+import { PromiseStatus } from '../interfaces/i-promise-status';
 
 const calcTotalTime = (hrtime: number[]): number => {
   return hrtime[0] * 1e9 + hrtime[1];
@@ -19,11 +19,11 @@ const cp: ICustomPromise<object[]> = {
     return true;
   },
   doneCallback: data => {
-    const res = ((data[0] as IAnyObject).result += 'd');
+    const res = ((data[0] as Record<string, unknown>).result += 'd');
     return [{ result: res }];
   },
   catchCallback: reason => {
-    const res = ((reason[0] as IAnyObject).result += 'c');
+    const res = ((reason[0] as Record<string, unknown>).result += 'c');
     return [{ result: res }];
   },
   args: [{ result: 'Result' }],
@@ -51,7 +51,7 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>): 
   it('Given a customPromiseList is provided, it sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', () => {
     const pb = new PromiseBatch(cpl);
     expect(pb.getStatusList()).to.eql({});
-    const arrayified: IAnyObject[] = [];
+    const arrayified: ICustomPromise<unknown>[] = [];
     Object.keys(pb.customPromiseList).forEach(promiseName => {
       arrayified.push(pb.customPromiseList[promiseName]);
     });
@@ -848,7 +848,7 @@ describe('PromiseBatch.finishAllPromises(): Sets all properties ended in AferCal
     pb.finishAllPromises();
     await call;
     Object.keys(pb.getStatusList()).forEach(key => {
-      expect(pb.observeStatus(key)).to.equal(PROMISE_STATUS.FULFILLED);
+      expect(pb.observeStatus(key)).to.equal(PromiseStatus.Fulfilled);
     });
   });
 });
@@ -860,7 +860,7 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     expect(pb.getStatusList()).to.not.eql({});
     pb.finishPromise(cpl[0].name);
     await call;
-    expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
+    expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PromiseStatus.Fulfilled);
   });
   it('Given the name of a promise not included in the batch, it does nothing', () => {
     const pb = new PromiseBatch();
@@ -873,7 +873,7 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     expect(pb.getStatusList()).to.not.eql({});
     pb.finishPromise(cpl[0]);
     await call;
-    expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PROMISE_STATUS.FULFILLED);
+    expect(pb.observeStatus(`${cpl[0].name}${AFTER_CALLBACK}`)).to.equal(PromiseStatus.Fulfilled);
   });
 });
 
@@ -962,7 +962,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
     await pb.promiseAll();
     pb.resetPromise(promiseName);
     Object.keys(pb.getStatusList()).forEach(key => {
-      expect(pb.observeStatus(key)).to.equal(PROMISE_STATUS.FULFILLED);
+      expect(pb.observeStatus(key)).to.equal(PromiseStatus.Fulfilled);
     });
   });
   it('Given the name or customPromise provided exists in the promise batch, it resets the status of promiseName and promiseNameAfterCallback to Pending', async () => {
@@ -974,7 +974,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
     pb.resetPromise(promiseName);
     pb.resetPromise(customPromise);
     Object.keys(pb.getStatusList()).forEach(key => {
-      expect(pb.observeStatus(key)).to.equal(PROMISE_STATUS.PENDING);
+      expect(pb.observeStatus(key)).to.equal(PromiseStatus.Pending);
     });
   });
 });
@@ -995,8 +995,8 @@ describe('PromiseBatch.observeStatus(key: string): Given a "key", it return its 
     const pb = new PromiseBatch();
     pb.add(cp);
     await pb.promiseAll();
-    expect(pb.observeStatus(cp.name)).to.be.eq(PROMISE_STATUS.FULFILLED);
-    expect(pb.observeStatus(`${cp.name}${AFTER_CALLBACK}`)).to.be.eq(PROMISE_STATUS.FULFILLED);
+    expect(pb.observeStatus(cp.name)).to.be.eq(PromiseStatus.Fulfilled);
+    expect(pb.observeStatus(`${cp.name}${AFTER_CALLBACK}`)).to.be.eq(PromiseStatus.Fulfilled);
   });
 
   it('Does not return the status saved inside "key", given it was not initialized', () => {

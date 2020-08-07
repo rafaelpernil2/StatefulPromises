@@ -1,19 +1,13 @@
 import { ICustomPromise } from '../interfaces/i-custom-promise';
+import { PromiseStatus } from '../interfaces/i-promise-status';
 
-export const PROMISE_STATUS = {
-  PENDING: 'p',
-  FULFILLED: 'f',
-  REJECTED: 'r'
-};
+// eslint-disable-next-line id-blacklist
+export const NO_RESULT = undefined;
 
-export const STATUS_CALLBACK_MAP: { [key: string]: Partial<keyof ICustomPromise<unknown>> } = {
-  [PROMISE_STATUS.FULFILLED]: 'doneCallback',
-  [PROMISE_STATUS.REJECTED]: 'catchCallback'
-};
-
-export const BATCH_MODE = {
-  ALL: 'all',
-  ANY: 'any'
+export const STATUS_CALLBACK_MAP: Record<PromiseStatus, Partial<keyof ICustomPromise<unknown>> | undefined> = {
+  [PromiseStatus.Pending]: NO_RESULT,
+  [PromiseStatus.Fulfilled]: 'doneCallback',
+  [PromiseStatus.Rejected]: 'catchCallback'
 };
 
 export const ERROR_MSG = {
@@ -26,8 +20,5 @@ export const ERROR_MSG = {
   NO_NEGATIVE_CONC_LIMIT: 'You cannot provide a concurrent limit below 1',
   INVALID_BATCH_MODE: 'This batch mode is invalid. You should not be seeing this'
 };
-
-// eslint-disable-next-line id-blacklist
-export const NO_RESULT = undefined;
 
 export const AFTER_CALLBACK = 'AfterCallback';
