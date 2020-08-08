@@ -1,14 +1,14 @@
 {
   "name": "stateful-promises",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "A project for creating stateful promise batches using Knockout.js",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/tests/**/*.ts --timeout 50000",
     "build": "tsc",
-    "lint": "eslint -c .eslintrc.js --ext .ts src/**/*.ts",
-    "format": "eslint --fix -c .eslintrc.js --ext .ts src/{,**/}*.ts",
+    "lint": "eslint -c .eslintrc.json --ext .ts src/**/*.ts",
+    "format": "eslint --fix -c .eslintrc.json --ext .ts src/{,**/}*.ts",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
