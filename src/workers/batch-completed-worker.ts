@@ -1,5 +1,5 @@
-import { ICustomPromise } from '../interfaces/i-custom-promise';
-import { SIMPLE_TEST } from '../utils/promise-util';
+import { ICustomPromise } from '../types/i-custom-promise';
+import { SIMPLE_TEST } from '../utils/test-util';
 import { PromiseBatch } from '../promise-batch';
 
 (async (): Promise<void> => {

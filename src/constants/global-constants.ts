@@ -1,5 +1,5 @@
-import { ICustomPromise } from '../interfaces/i-custom-promise';
-import { PromiseStatus } from '../interfaces/i-promise-status';
+import { ICustomPromise } from '../types/i-custom-promise';
+import { PromiseStatus } from '../types/promise-status';
 
 // eslint-disable-next-line id-blacklist
 export const NO_RESULT = undefined;
@@ -21,4 +21,4 @@ export const ERROR_MSG = {
   INVALID_BATCH_MODE: 'This batch mode is invalid. You should not be seeing this'
 };
 
-export const AFTER_CALLBACK = 'AfterCallback';
+export const AFTER_PROCESSING = 'AfterProcessing';

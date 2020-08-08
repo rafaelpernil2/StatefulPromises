@@ -1,4 +1,5 @@
-import { ICustomPromise } from './interfaces/i-custom-promise';
+import { ICustomPromise } from './types/i-custom-promise';
 import { PromiseBatch } from './promise-batch';
+import { PromiseStatus } from './types/promise-status';
 
-export { PromiseBatch, ICustomPromise };
+export { PromiseBatch, ICustomPromise, PromiseStatus };
