@@ -219,7 +219,7 @@ export class PromiseBatch {
   }
 
   /**
-   * Resets the whole instance to the the state prior to the first execution. 
+   * Resets the whole instance to the the state prior to the first execution.
    * No cache, all status pending but with all previously added promises
    */
   public reset(): void {
