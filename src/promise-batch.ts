@@ -122,15 +122,13 @@ export class PromiseBatch {
    * Returns a promise that resolves once all promises are fulfilled or rejected, including "after processing" promise status (see finishPromise)
    */
   public isBatchCompleted(): Promise<boolean> {
-    // Initial check
-    const statusObject = this.statusObject.Status;
-    const arePromisesCompleted = Object.values(statusObject).every(value => [PromiseStatus.Fulfilled, PromiseStatus.Rejected].includes(value()));
-    const promisesFinished = ko.pureComputed(() => Object.values(statusObject).every(value => value() !== PromiseStatus.Pending));
+    const arePromisesCompleted: () => boolean = () => Object.values(this.statusObject.Status).every(value => value() !== PromiseStatus.Pending);
     return new Promise<boolean>(resolve => {
-      if (arePromisesCompleted) {
+      // Initial check
+      if (arePromisesCompleted()) {
         resolve(true);
       } else {
-        promisesFinished.subscribe(newValue => (newValue ? resolve(newValue) : GLOBAL_CONSTANTS.NO_RESULT));
+        ko.pureComputed(arePromisesCompleted).subscribe(newValue => (newValue ? resolve(newValue) : GLOBAL_CONSTANTS.NO_RESULT));
       }
     });
   }
