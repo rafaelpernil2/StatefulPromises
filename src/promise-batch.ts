@@ -442,7 +442,7 @@ export class PromiseBatch {
           }
         },
         (error: unknown) => {
-          const catchData: IStatefulResponse = {
+          const catchData = {
             status: PromiseStatus.Rejected,
             response: error
           };
