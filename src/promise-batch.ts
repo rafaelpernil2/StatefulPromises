@@ -1,20 +1,12 @@
 import ko from 'knockout';
 import { ICustomPromise } from './types/i-custom-promise';
 import { PromiseStatus } from './types/promise-status';
+import { BatchMode } from './types/batch-mode';
+import { IStatefulResponse } from './types/i-stateful-response';
 import { IPromiseState } from './types/i-promise-state';
 import { ERROR_MSG } from './constants/error-messages';
 import { GLOBAL_CONSTANTS } from './constants/global-constants';
 import { STATUS_CALLBACK_MAP } from './constants/promise-status-maps';
-
-type IStatefulResponse<T> = {
-  status?: PromiseStatus;
-  response: T;
-};
-
-enum BatchMode {
-  All,
-  AllSettled
-}
 
 export class PromiseBatch {
   public customPromiseList: Record<string, ICustomPromise<unknown>>;
