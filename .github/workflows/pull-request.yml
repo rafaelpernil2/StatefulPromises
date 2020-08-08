@@ -9,7 +9,7 @@ jobs:
       - name: Setup Node.js for use with actions
         uses: actions/setup-node@v1.1.0
         with:
-          node-version: '10.x'
+          version: '10.x'
       - run: npm install
       - name: Run ESLint
         uses: icrawl/action-eslint@v1
