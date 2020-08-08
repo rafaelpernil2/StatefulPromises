@@ -1036,7 +1036,7 @@ describe('PromiseBatch.isBatchFulfilled()', () => {
       } catch (error) {
         // Do nothing
       }
-      const checkCompleted = pb.isBatchCompleted();
+      const checkCompleted = pb.isBatchFulfilled();
       const result = await checkCompleted;
       expect(result).to.eq(true);
     });

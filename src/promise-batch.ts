@@ -8,6 +8,8 @@ enum BatchMode {
   Any
 }
 
+type IStatefulResponse = { status?: PromiseStatus; response: unknown };
+
 export class PromiseBatch {
   public customPromiseList: Record<string, ICustomPromise<unknown>>;
   public batchResponse: Record<string, unknown>;
@@ -423,9 +425,7 @@ export class PromiseBatch {
       customPromise.function.call(customPromise.thisArg, ...args).then(
         (response: T) => {
           // Save the response
-          const doneData: { status?: PromiseStatus; response: unknown } = {
-            response
-          };
+          const doneData: IStatefulResponse = { response };
           // Validate response if a validator was provided
           this.execValidateIfProvided(customPromise, doneData);
           // Execute done or catch callback depending on the status in doneData
@@ -442,7 +442,7 @@ export class PromiseBatch {
           }
         },
         (error: unknown) => {
-          const catchData: { status: PromiseStatus; response: unknown } = {
+          const catchData: IStatefulResponse = {
             status: PromiseStatus.Rejected,
             response: error
           };
@@ -453,7 +453,7 @@ export class PromiseBatch {
     });
   }
 
-  private execCallbacks<T>(customPromise: ICustomPromise<T>, data: { status?: PromiseStatus; response: unknown }): void {
+  private execCallbacks<T>(customPromise: ICustomPromise<T>, data: IStatefulResponse): void {
     this.updateStatus(customPromise.name, data.status ?? PromiseStatus.Pending);
     const statusRelCallback = STATUS_CALLBACK_MAP[data.status ?? PromiseStatus.Pending];
     if (statusRelCallback) {
