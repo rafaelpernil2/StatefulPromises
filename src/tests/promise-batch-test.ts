@@ -4,11 +4,12 @@ import * as path from 'path';
 import ko from 'knockout';
 import { expect } from 'chai';
 import 'mocha';
-import { AFTER_PROCESSING, ERROR_MSG } from '../constants/global-constants';
 import { ICustomPromise } from '../types/i-custom-promise';
 import { PromiseBatch } from '../promise-batch';
 import { DUMMY_MESSAGES, TestUtil, SIMPLE_TEST } from '../utils/test-util';
 import { PromiseStatus } from '../types/promise-status';
+import { ERROR_MSG } from '../constants/error-messages';
+import { GLOBAL_CONSTANTS } from '../constants/global-constants';
 
 const timeout = 5000;
 
@@ -1230,7 +1231,7 @@ describe('PromiseBatch.getStatusList()', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       await pb.all();
-      expect(pb.getStatusList()).to.contain.keys([examplePromise.name, `${examplePromise.name}${AFTER_PROCESSING}`]);
+      expect(pb.getStatusList()).to.contain.keys([examplePromise.name, `${examplePromise.name}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`]);
     });
   });
 });
