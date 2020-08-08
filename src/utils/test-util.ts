@@ -9,7 +9,7 @@ export const DUMMY_MESSAGES = {
 export const SIMPLE_TEST = 'FirstExecSimpleTest';
 
 // This class is only used for testing purposes
-export class PromiseUtil {
+export class TestUtil {
   public static NO_INPUT_PROVIDED = { res: 'No input provided' };
 
   public static buildRandomTimePromise(timeMagnitude: number): (input: any[]) => Promise<any> {
@@ -20,7 +20,7 @@ export class PromiseUtil {
           if (input[0]) {
             resolve(input);
           } else {
-            resolve(PromiseUtil.NO_INPUT_PROVIDED);
+            resolve(TestUtil.NO_INPUT_PROVIDED);
           }
         }, time);
       });
@@ -48,7 +48,7 @@ export class PromiseUtil {
           if (input[0]) {
             resolve(JSON.parse(JSON.stringify(input)));
           } else {
-            resolve(PromiseUtil.NO_INPUT_PROVIDED);
+            resolve(TestUtil.NO_INPUT_PROVIDED);
           }
         }, timeInMs);
       });
@@ -75,7 +75,7 @@ export class PromiseUtil {
         if (input[0]) {
           resolve(input);
         } else {
-          resolve(PromiseUtil.NO_INPUT_PROVIDED);
+          resolve(TestUtil.NO_INPUT_PROVIDED);
         }
       });
     };
@@ -100,10 +100,10 @@ export class PromiseUtil {
   }
 
   public buildSingleParamFixedTimePromise<T>(timeInMs: number): (input: T) => Promise<T> {
-    return PromiseUtil.buildSingleParamFixedTimePromise<T>(timeInMs);
+    return TestUtil.buildSingleParamFixedTimePromise<T>(timeInMs);
   }
   public buildPassthroughPromise(): (input: any[]) => Promise<any> {
-    return PromiseUtil.buildPassthroughPromise();
+    return TestUtil.buildPassthroughPromise();
   }
 
   public buildNoParamFixedTimePromise(timeInMs: number): () => Promise<string> {

@@ -1,10 +1,8 @@
-import { ICustomPromise } from '../interfaces/i-custom-promise';
-import { PromiseBatchStatus } from '../promise-batch-status';
-import { DataUtil } from '../utils/data-util';
-import { SIMPLE_TEST } from '../utils/promise-util';
+import { ICustomPromise } from '../types/i-custom-promise';
+import { SIMPLE_TEST } from '../utils/test-util';
+import { PromiseBatch } from '../promise-batch';
 
 (async (): Promise<void> => {
-  const pbs = new PromiseBatchStatus();
   const cp1: ICustomPromise<string> = {
     name: SIMPLE_TEST,
     function: () => Promise.resolve('')
@@ -14,18 +12,20 @@ import { SIMPLE_TEST } from '../utils/promise-util';
     function: () => Promise.resolve('')
   };
 
+  const promiseBatch = new PromiseBatch();
+
   try {
-    await DataUtil.execStatefulPromise(cp1, pbs);
+    await promiseBatch.exec(cp1);
   } catch (error) {
     // Do nothing
   }
   try {
-    await DataUtil.execStatefulPromise(cp2, pbs);
+    await promiseBatch.exec(cp2);
   } catch (error) {
     // Do nothing
   }
-  const checkFulfilled = DataUtil.isPromiseBatchFulfilled(pbs);
-  pbs.notifyAsFinished(SIMPLE_TEST);
+  const checkFulfilled = promiseBatch.isBatchFulfilled();
+  promiseBatch.finishPromise(SIMPLE_TEST);
 
   if (process && process.send) {
     process.send(await checkFulfilled);
