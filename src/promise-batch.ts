@@ -76,7 +76,7 @@ export class PromiseBatch {
    * Like Promise.all(): Executes the whole list of custom promises and appends the fulfilled results in an object
    * @param concurrentLimit Limits how many promises are executed at the same time
    */
-  public async all(concurrentLimit?: number): Promise<Record<string, unknown>> {
+  public all(concurrentLimit?: number): Promise<Record<string, unknown>> {
     return this.doExecAll(this.customPromiseList, BatchMode.All, concurrentLimit);
   }
 
@@ -84,7 +84,7 @@ export class PromiseBatch {
    * Like Promise.allSettled(): Executes the whole lsit of custom promises and appends the fulfilled and rejected results in an object
    * @param concurrentLimit Limits how many promises are executed at the same time
    */
-  public async allSettled(concurrentLimit?: number): Promise<Record<string, unknown>> {
+  public allSettled(concurrentLimit?: number): Promise<Record<string, unknown>> {
     return this.doExecAll(this.customPromiseList, BatchMode.AllSettled, concurrentLimit);
   }
 
@@ -92,7 +92,7 @@ export class PromiseBatch {
    * If some promises were rejected executing .all, this method retries those rejected promises and returns the ones that fail again
    * @param concurrentLimit Limits how many promises are executed at the same time
    */
-  public async retryRejected(concurrentLimit?: number): Promise<Record<string, unknown>> {
+  public retryRejected(concurrentLimit?: number): Promise<Record<string, unknown>> {
     const rejectedPromises = this.getRejectedPromises();
     this.resetRejectedPromises();
     return this.doExecAll(rejectedPromises, BatchMode.All, concurrentLimit);
@@ -226,7 +226,7 @@ export class PromiseBatch {
 
   private addCachedResponse<T>(customPromise: ICustomPromise<T>, response: T): void {
     if (customPromise?.cached) {
-      this.statusObject.Cache[customPromise.name] = response;
+      this.statusObject.Cache[customPromise.name] = typeof response === 'object' ? JSON.parse(JSON.stringify(response)) : response;
     }
   }
 
@@ -235,9 +235,7 @@ export class PromiseBatch {
   }
 
   private resetRejectedPromises(): void {
-    this.getRejectedPromiseNames().forEach(promiseName => {
-      this.resetStatus(promiseName);
-    });
+    this.getRejectedPromiseNames().forEach(promiseName => this.resetStatus(promiseName));
   }
 
   private notifyAsFinished(key: string): void {
@@ -258,8 +256,7 @@ export class PromiseBatch {
   }
 
   private isPromiseReset<T>(promiseName: string): boolean {
-    const promiseStatus = this.observeStatus(promiseName)?.promiseStatus;
-    return this.isPromiseInBatch(promiseName) && promiseStatus === PromiseStatus.Pending;
+    return this.isPromiseInBatch(promiseName) && this.observeStatus(promiseName)?.promiseStatus === PromiseStatus.Pending;
   }
 
   private shouldSaveResult<T>(customPromise: ICustomPromise<T>): boolean {
@@ -294,12 +291,12 @@ export class PromiseBatch {
 
   private async execAll(customPromiseList: Record<string, ICustomPromise<unknown>>, concurrentLimit?: number): Promise<void> {
     const promisesInProgress = [];
-    const promiseList = Object.keys(customPromiseList);
+    const promiseNameList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
-    promiseList.forEach(promiseName => this.initStatus(promiseName));
-    const execLimit = this.checkConcurrentLimit(promiseList, concurrentLimit);
+    promiseNameList.forEach(promiseName => this.initStatus(promiseName));
+    const execLimit = this.checkConcurrentLimit(promiseNameList, concurrentLimit);
     for (let index = 0; index < execLimit; index++) {
-      promisesInProgress.push(this.execAllRec(customPromiseList, customPromiseList[promiseList[index]], promiseList.slice(execLimit)));
+      promisesInProgress.push(this.execAllRec(customPromiseList, customPromiseList[promiseNameList[index]], promiseNameList.slice(execLimit)));
     }
     for (const promise of promisesInProgress) {
       await promise;
