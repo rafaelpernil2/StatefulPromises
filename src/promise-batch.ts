@@ -106,7 +106,7 @@ export class PromiseBatch {
     if (customPromise?.doneCallback || customPromise?.catchCallback) {
       return;
     }
-    this.updateStatus(`${customPromise.name}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
+    this.notifyAsFinished(customPromise.name);
   }
 
   /**
@@ -234,6 +234,10 @@ export class PromiseBatch {
     this.getRejectedPromiseNames().forEach(promiseName => this.resetPromise(promiseName));
   }
 
+  private notifyAsFinished(promiseName: string): void {
+    this.updateStatus(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
+  }
+
   private isStatusValid(promiseName: string, status: PromiseStatus): boolean {
     // afterProcessing status can't be rejected, it only can be Fulfilled or Pending
     return !promiseName.endsWith(GLOBAL_CONSTANTS.AFTER_PROCESSING) || status !== PromiseStatus.Rejected;
@@ -353,7 +357,7 @@ export class PromiseBatch {
     if (hasFinally) {
       data.response = customPromise.finallyCallback?.(data.response);
     }
-    this.finishPromise(customPromise);
+    this.notifyAsFinished(customPromise.name);
   }
 
   private checkCallbacks<T>(customPromise: ICustomPromise<T>, statusRelCallback?: Partial<keyof ICustomPromise<unknown>>): { hasDoneOrCatch: boolean; hasFinally: boolean } {
