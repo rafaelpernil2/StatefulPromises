@@ -73,8 +73,7 @@
             "string",
             "Boolean",
             "boolean",
-            "Undefined",
-            "undefined"
+            "Undefined"
         ],
         "id-match": "error",
         "linebreak-style": "off",

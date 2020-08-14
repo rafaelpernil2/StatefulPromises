@@ -1219,8 +1219,8 @@ describe('PromiseBatch.observeStatus(nameOrCustomPromise: string | ICustomPromis
   context('given it was not initialized', () => {
     it('returns undefined', () => {
       const pb = new PromiseBatch();
-      expect(pb.observeStatus(key)?.promiseStatus).to.be.eq(undefined);
-      expect(pb.observeStatus(key)?.afterProcessingStatus).to.be.eq(undefined);
+      expect(pb.observeStatus(key).promiseStatus).to.be.eq(undefined);
+      expect(pb.observeStatus(key).afterProcessingStatus).to.be.eq(undefined);
     });
   });
 });
