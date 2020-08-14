@@ -51,9 +51,9 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public remove(nameOrCustomPromise: string | ICustomPromise<unknown>): void {
-    const name = this.getPromiseName(nameOrCustomPromise);
-    if (this.customPromiseList.hasOwnProperty(name)) {
-      delete this.customPromiseList[name];
+    const promiseName = this.getPromiseName(nameOrCustomPromise);
+    if (this.customPromiseList.hasOwnProperty(promiseName)) {
+      delete this.customPromiseList[promiseName];
     }
   }
 
@@ -152,7 +152,10 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
-    this.resetStatus(this.getPromiseName(nameOrCustomPromise));
+    const promiseName = this.getPromiseName(nameOrCustomPromise);
+    if (this.isStatusInitialized(promiseName) && this.isStatusInitialized(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`)) {
+      this.createStatus(promiseName);
+    }
   }
 
   /**
@@ -202,12 +205,6 @@ export class PromiseBatch {
     }
   }
 
-  private resetStatus(key: string): void {
-    if (this.isStatusInitialized(key) && this.isStatusInitialized(`${key}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`)) {
-      this.createStatus(key);
-    }
-  }
-
   private createStatus(key: string): void {
     this.statusObject.Status[key] = ko.observable(PromiseStatus.Pending);
     this.statusObject.Status[`${key}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`] = ko.observable(PromiseStatus.Pending);
@@ -234,7 +231,7 @@ export class PromiseBatch {
   }
 
   private resetRejectedPromises(): void {
-    this.getRejectedPromiseNames().forEach(promiseName => this.resetStatus(promiseName));
+    this.getRejectedPromiseNames().forEach(promiseName => this.resetPromise(promiseName));
   }
 
   private notifyAsFinished(key: string): void {
