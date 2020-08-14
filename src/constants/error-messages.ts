@@ -1,6 +1,6 @@
 export const ERROR_MSG = {
-  NO_CACHED_VALUE: 'There is not cached value for this promise',
-  INVALID_PROMISE_NAME: 'This batch does not have a not a promise with this name',
+  NO_CACHED_VALUE: 'There is no cached value for this promise',
+  INVALID_PROMISE_NAME: 'This batch does not have a promise with this name',
   NO_PROMISE_FUNCTION: 'Cannot read function of promise',
   SOME_PROMISE_STILL_RUNNING: 'Some promise is still running. You should not be seeing this',
   PENDING_STATUS: 'The status of this promise is pending. You should not be seeing this',
