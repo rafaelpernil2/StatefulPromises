@@ -1155,9 +1155,15 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     });
   });
   context('given the name of a promise not included in the batch', () => {
-    it('does nothing', () => {
+    it(`it throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, () => {
       const pb = new PromiseBatch();
-      pb.finishPromise('NonExistent');
+      let result;
+      try {
+        pb.finishPromise('NonExistent');
+      } catch (error) {
+        result = error;
+      }
+      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
     });
   });
   context('given a custom promise', () => {
