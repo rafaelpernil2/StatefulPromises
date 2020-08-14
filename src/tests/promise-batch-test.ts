@@ -941,6 +941,24 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
       expect(result).to.eql([{ result: 'Resultd' }]);
     });
   });
+
+  context('given nameOrCustomPromise is valid and the promise rejects', () => {
+    it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse returning a rejected promise', async () => {
+      const pb = new PromiseBatch();
+      const rejectedPromise: ICustomPromise<string> = {
+        name: 'Test2',
+        function: () => Promise.reject('Test')
+      };
+      let result;
+      try {
+        await pb.exec(rejectedPromise);
+      } catch (error) {
+        result = error;
+      }
+      expect(pb.batchResponse).to.eql({ Test2: 'Test' });
+      expect(result).to.eql('Test');
+    });
+  });
 });
 
 describe('PromiseBatch.isBatchCompleted()', () => {

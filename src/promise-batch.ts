@@ -106,7 +106,7 @@ export class PromiseBatch {
     if (customPromise?.doneCallback || customPromise?.catchCallback) {
       return;
     }
-    this.notifyAsFinished(customPromise.name);
+    this.updateStatus(`${customPromise.name}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
   }
 
   /**
@@ -206,7 +206,7 @@ export class PromiseBatch {
   }
 
   private updateStatus(promiseName: string, newStatus: PromiseStatus): void {
-    if (!this.isStatusInitialized(promiseName) || !this.isStatusValid(promiseName, newStatus)) {
+    if (!(this.isStatusInitialized(promiseName) && this.isStatusValid(promiseName, newStatus))) {
       return;
     }
     this.statusObject.Status[promiseName](newStatus);
@@ -234,34 +234,31 @@ export class PromiseBatch {
     this.getRejectedPromiseNames().forEach(promiseName => this.resetPromise(promiseName));
   }
 
-  private notifyAsFinished(promiseName: string): void {
-    this.updateStatus(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
-  }
-
   private isStatusValid(promiseName: string, status: PromiseStatus): boolean {
     // afterProcessing status can't be rejected, it only can be Fulfilled or Pending
     return !promiseName.endsWith(GLOBAL_CONSTANTS.AFTER_PROCESSING) || status !== PromiseStatus.Rejected;
   }
 
   private isStatusInitialized(promiseName: string): boolean {
+    // A Knockouut obervable has a function to set and observe its value when it is initialized
     return typeof this.statusObject?.Status?.[promiseName] === 'function';
   }
 
-  private isPromiseInBatch<T>(promiseName: string): boolean {
+  private isPromiseInResponse(promiseName: string): boolean {
     return this.batchResponse.hasOwnProperty(promiseName);
   }
 
-  private isPromiseReset<T>(promiseName: string): boolean {
-    return this.isPromiseInBatch(promiseName) && this.observeStatus(promiseName)?.promiseStatus === PromiseStatus.Pending;
+  private isPromiseReset(promiseName: string): boolean {
+    return this.isPromiseInResponse(promiseName) && this.observeStatus(promiseName)?.promiseStatus === PromiseStatus.Pending;
   }
 
   private shouldSaveResult(promiseName: string): boolean {
-    return !this.isPromiseInBatch(promiseName) || this.isPromiseReset(promiseName);
+    return !this.isPromiseInResponse(promiseName) || this.isPromiseReset(promiseName);
   }
 
   private async doExec<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
     const shouldSave = this.shouldSaveResult(customPromise.name);
-    const result = await this.wrapPromise<T | undefined>(this.execStatefulPromise<T>(customPromise));
+    const result = await this.execStatefulPromise<T>(customPromise);
     if (!shouldSave) {
       return result;
     }
@@ -356,7 +353,7 @@ export class PromiseBatch {
     if (hasFinally) {
       data.response = customPromise.finallyCallback?.(data.response);
     }
-    this.notifyAsFinished(customPromise.name);
+    this.finishPromise(customPromise);
   }
 
   private checkCallbacks<T>(customPromise: ICustomPromise<T>, statusRelCallback?: Partial<keyof ICustomPromise<unknown>>): { hasDoneOrCatch: boolean; hasFinally: boolean } {
@@ -393,14 +390,6 @@ export class PromiseBatch {
           break;
       }
     });
-  }
-
-  private async wrapPromise<T>(promise: Promise<T>): Promise<T> {
-    try {
-      return await promise;
-    } catch (error) {
-      return error;
-    }
   }
 
   private checkConcurrentLimit(promiseNameList: string[], concurrentLimit?: number): number {
