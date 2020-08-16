@@ -56,7 +56,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to promise status at any time with [observeStatus](#observestatuspromisename-string).
 
-* Automated Test Suite: 62 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`
+* Automated Test Suite: 70 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 
@@ -236,9 +236,9 @@ promiseBatch.exec(customPromise).then((response)=>{
 
 ### PromiseBatch
 
-This class provides a set of methods for working statefully with a single use set of Promises. Each PromiseBatch has a set of customPromises to execute either using `exec` for individual execution, `all` or `allSettled` for batch execution, while providing methods to retry failed promises, check statuses or notify promises as finished for making sure all `.then` post-processing is done without race conditions.
+This class provides a set of methods for working statefully with a single use set of Promises. Each PromiseBatch has a set of customPromises to execute either using [exec](#exectnameorcustompromise-string--icustompromiset) for individual execution, [all](#allconcurrentlimit-number) or [allSettled](#allSettledconcurrentlimit-number) for batch execution, while providing methods to retry failed promises, check statuses or notify promises as finished for making sure all `.then` post-processing is done without race conditions.
 
-By desing, it is a single use batch to avoid expensive calls to functions when the current result is already loaded. Also, it allows to keep track of different sets of executions thus creating a more organized code base.
+By desing, it is a single use batch to avoid expensive calls to functions when the current result is already loaded and remains valid. Also, it allows to keep track of different sets of executions thus creating a more organized code base.
 
 
 ##### Initialization:
@@ -247,9 +247,10 @@ By desing, it is a single use batch to avoid expensive calls to functions when t
 const promiseBatch = new PromiseBatch(yourCustomPromiseArray: Array<ICustomPromise<unknown>>); // The parameter is optional
 ```
 
-#### add<T>(customPromise: ICustomPromise<T>)
 
-Adds a single `ICustomPromise<T>` to the batch, with T being the type of the promise.
+#### add\<T\>(customPromise: ICustomPromise\<T\>)
+
+Adds a single [ICustomPromise\<T\>](#icustompromiset) to the batch, with T being the type of the promise.
 
 
 ##### Example:
@@ -260,6 +261,7 @@ const customPromise: ICustomPromise<string> = {
 };
 promiseBatch.add(customPromise);
 ```
+
 
 #### remove(nameOrCustomPromise: string | ICustomPromise\<unknown\>)
 
@@ -277,9 +279,10 @@ promiseBatch.remove('GoodbyePromise');
 ```
 
 
-#### addList(customPromiseList: Array<ICustomPromise<unknown>>)
+#### addList(customPromiseList: Array\<ICustomPromise\<unknown\>\>)
 
-Adds an array of `ICustomPromise<unknown>` to the batch. This means that all promises in the array can have different response types. The type will be resolved in execution time.
+Adds an array of [ICustomPromise\<unknown\>](#icustompromiset) to the batch. This means that all promises in the array can have different response types, which can be individually narrowed at further points in the code.
+
 
 ##### Example:
 ```typescript
@@ -296,6 +299,47 @@ const customPromiseList: ICustomPromise<unknown>= [
 promiseBatch.addList(customPromiseList);
 ```
 
+
+#### getCustomPromiseList()
+
+Returns the list of custom promises previously added using the [add](#addtcustompromise-icustompromiset) or [addList](#addlistcustompromiselist-arrayicustompromiseunknown) or at [initialization](#initialization)
+
+##### Example:
+```typescript
+const customPromiseList: ICustomPromise<unknown>= [
+  {
+    name: 'HelloPromise',
+    function: () => Promise.resolve('Hello World!')
+  },
+  {
+    name: 'GoodbyePromise',
+    function: () => Promise.resolve('Goodbye World!')
+  }
+];
+const anotherPromise: ICustomPromise<string>= {
+  name: 'AnotherPromise',
+  function: () => Promise.resolve('Another')
+}
+promiseBatch.add(anotherPromise)
+promiseBatch.addList(customPromiseList);
+const result = promiseBatch.getCustomPromiseList();
+// [
+//   {
+//     name: 'HelloPromise',
+//     function: () => Promise.resolve('Hello World!')
+//   },
+//   {
+//     name: 'GoodbyePromise',
+//     function: () => Promise.resolve('Goodbye World!')
+//   }
+//   {
+//     name: 'AnotherPromise',
+//     function: () => Promise.resolve('Another')
+//   }
+// ];
+```
+
+
 #### all(concurrentLimit?: number)
 
 Your classic Promise.all() but:
@@ -303,10 +347,11 @@ Your classic Promise.all() but:
 * Saves all results no matter what.
 * Saves all results in an object using the name of each promise as a key instead of an array.
 * Provides an optional concurrency limit for specifying how many promises you want to execute in parallel.
+* Throws an error describing which promises have been rejected
 
 ##### Important note:
 
-> This operation finishes all promises automatically, so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
+> This operation finishes all promises automatically (see [finishPromise](#finishpromisetnameorcustompromise-string--icustompromiset)), so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
 
 ##### Example:
 ```typescript
@@ -315,8 +360,10 @@ promiseBatch.all(concurrentLimit).then((response)=>{
   // response = { HelloPromise: "Hello World!', GoodbyePromise: "Goodbye World!" }
 }, (error)=>{
   // error = Some promise was rejected: RejectPromise
+  promiseBatch.getBatchResponse() // Even if some promise was rejected, getBatchResponse contains all fulfilled promises
 });
 ```
+
 
 #### allSettled(concurrentLimit?: number)
 
@@ -324,17 +371,24 @@ Same as JS Promise.allSettled(), it returns the batch with all rejected and fulf
 
 ##### Important note:
 
-> This operation finishes all promises automatically, so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
+> This operation finishes all promises automatically (see [finishPromise](#finishpromisetnameorcustompromise-string--icustompromiset)), so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
 
 ##### Example:
 ```typescript
 const concurrentLimit = 2; // Executes at maximum 2 promises at a time
 promiseBatch.allSettled(concurrentLimit).then((response)=>{
-  // response = { HelloPromise: "Hello World!', GoodbyePromise: "Goodbye World!" }
+  // response = { HelloPromise: "Hello World!', GoodbyePromise: "Goodbye World!", RejectPromise: "This is an error" }
+  // You can access the status of each promise at any time, and, as you can see, the rejected promise keeps its status
+  promiseBatch.observeStatus('RejectPromise');
+  // {
+  //    promiseStatus: PromiseStatus.Rejected,
+  //    afterProcessingStatus: PromiseStatus.Fulfilled
+  // }
 }, (error)=>{
   // This is never executed. If you see an error here, it means this library is not working as intended
 });
 ```
+
 
 #### retryRejected(concurrentLimit?: number)
 
@@ -342,7 +396,7 @@ If after calling all() or allSettled(), some promise failed, you may retry those
 
 ##### Important note:
 
-> This operation finishes all promises automatically, so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
+> This operation finishes all promises automatically (see [finishPromise](#finishpromisetnameorcustompromise-string--icustompromiset)), so if you need to handle each promise response individually, you MUST use [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any).
 
 ##### Example:
 ```typescript
@@ -357,6 +411,7 @@ promiseBatch.all().catch((error)=>{
 });
 ```
 
+
 #### exec\<T\>(nameOrCustomPromise: string | ICustomPromise\<T\>)
 
 It executes a single promise. Behaves exactly as all and allSettled, saving the promise and its result to the associated batch.
@@ -365,7 +420,7 @@ It executes a single promise. Behaves exactly as all and allSettled, saving the 
 > For a single execution to be considered finished, you MUST define a callback for the case you are contemplating: Fullfillment or Rejection.
 >
 > There are two ways of doing that:
-> * Define [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any) properties in the `ICustomPromise<T>` object.
+> * Define [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any) properties in the [ICustomPromise\<T\>](#icustompromiset) object.
 > * Implement exec's `.then` or `.catch` method with a call to [finishPromise](#finishpromisetnameorcustompromise-string--icustompromiset) at the end.
 >
 > Remember that if you only cover fullfillment case (`.doneCallback` or `.then`), on rejection, the promise won't be considered finished and viceversa.
@@ -405,6 +460,45 @@ promiseBatch.exec('GoodbyePromise').then((result)=>{
 ```
 
 
+#### getCacheList()
+
+Returns an object containing the result of the execution of each custom promise with `cached = true`.  It is indexed by the property `name` of each custom promise.
+
+##### Example:
+```typescript
+const uncachedPromise: ICustomPromise<string> = {
+  name: 'HelloPromiseUncached',
+  cached: false, // It's the same as not specifying it
+  function: () => Promise.resolve('Hello World from the preset!')
+};
+const cachedPromise: ICustomPromise<string> = {
+  name: 'HelloPromiseCached',
+  cached: true,
+  function: () => Promise.resolve('Hello World from the past!')
+};
+promiseBatch.add(uncachedPromise);
+promiseBatch.add(cachedPromise);
+await promiseBatch.all(); // { HelloPromiseUncached: 'Hello World from the preset!', HelloPromiseCached: 'Hello World from the past!' }
+promiseBatch.getCacheList(); // { HelloPromiseCached: 'Hello World from the past!' }
+```
+
+
+#### getBatchResponse()
+
+Returns an object containing the response of previous executions of custom promises inside the batch. This is the same object returned as fulfillment result of [all](#allconcurrentlimit-number), [allSettled](#allSettledconcurrentlimit-number) and [retryRejected](#retryrejectedconcurrentlimit-number).
+
+##### Example:
+```typescript
+const anotherPromise: ICustomPromise<string>= {
+  name: 'AnotherPromise',
+  function: () => Promise.resolve('Another')
+}
+await promiseBatch.all(); // { HelloPromise: 'Hello World!', GoodbyePromise: 'Goodbye World!' }
+promiseBatch.exec(anotherPromise); // { AnotherPromise: 'Another' }
+promiseBatch.getBatchResponse() // { HelloPromise: 'Hello World!', GoodbyePromise: 'Goodbye World!',  AnotherPromise: 'Another' }
+```
+
+
 #### isBatchCompleted()
 
 Returns true once all the promises in the batch have been resolved or rejected.
@@ -417,6 +511,7 @@ promiseBatch.isBatchCompleted().then((response)=>{
   // response = true
 });
 ```
+
 
 #### isBatchFulfilled()
 
@@ -435,9 +530,10 @@ promiseBatch.isBatchFulfilled().then((response)=>{
 });
 ```
 
+
 #### finishPromise\<T\>(nameOrCustomPromise: string | ICustomPromise\<T\>)
 
-Marks the "after processing" status of a promise as fulfilled. This affects `exec` calls whose customPromise does not define a `doneCallback` or `catchCallback` properties.
+Marks the "after processing" status of a promise as fulfilled. This affects [exec](#exectnameorcustompromise-string--icustompromiset) calls whose customPromise does not define a [doneCallback](#donecallbackresponse-t-t) or [catchCallback](#catchcallbackerror-any-any) properties.
 This is designed for making sure you can do all post-processing after the promise is resolved without running into race conditions.
 
 ##### Example:
@@ -454,9 +550,6 @@ promiseBatch.add(goodbyePromise);
 promiseBatch.exec(helloPromise).then((result)=>{
   // result = 'Hello World!'
   // Do some data processing...
-  promiseBatch.isBatchCompleted().then((result)=>{
-    // result=true once promiseBatch.finishPromise is executed
-  });
   promiseBatch.finishPromise('HelloPromise');
 }, (error)=>{
   // Nothing
@@ -467,10 +560,11 @@ promiseBatch.exec('GoodbyePromise').then((result)=>{
 }, (error)=>{
   // error = 'Goodbye World!'
   // Do some data processing...
-  promiseBatch.isBatchCompleted().then((result)=>{
-    // result=true once promiseBatch.finishPromise is executed
-  });
   promiseBatch.finishPromise(goodbyePromise);
+});
+
+promiseBatch.isBatchCompleted().then((result)=>{
+    // result=true once promiseBatch.finishPromise is executed for both custom promises
 });
 ```
 
@@ -499,6 +593,7 @@ promiseBatch.isBatchCompleted().then((result)=>{
 promiseBatch.finishAllPromises();
 ```
 
+
 #### observeStatus(promiseName: string)
 
 Allows you to access the current status of any of the promises of your batch, including the after processing status
@@ -506,24 +601,25 @@ Allows you to access the current status of any of the promises of your batch, in
 ##### Example:
 ```typescript
 promiseBatch.all().then((response)=>{
-  promiseBatch.observeStatus('HelloPromise'); 
-  // { 
+  promiseBatch.observeStatus('HelloPromise');
+  // {
   //    promiseStatus: PromiseStatus.Fulfilled,
   //    afterProcessingStatus: PromiseStatus.Pending
   // }
   promiseBatch.finishPromise();
-  promiseBatch.observeStatus('HelloPromise'); 
-  // { 
+  promiseBatch.observeStatus('HelloPromise');
+  // {
   //    promiseStatus: PromiseStatus.Fulfilled,
   //    afterProcessingStatus: PromiseStatus.Fulfilled
   // }
 });
-promiseBatch.observeStatus('HelloPromise'); 
-// { 
+promiseBatch.observeStatus('HelloPromise');
+// {
 //    promiseStatus: PromiseStatus.Pending,
 //    afterProcessingStatus: PromiseStatus.Pending
 // }
 ```
+
 
 #### getStatusList()
 
@@ -531,8 +627,9 @@ Returns an object with the statuses of all promises in the batch. Each status pr
 
 ##### Example:
 ```typescript
-const statusList = promiseBatch.getStatusList(); // statusList = { HelloPromise: ko.observable(...), ... }
+const statusList = promiseBatch.getStatusList(); // statusList = { HelloPromise: function(), ... }
 ```
+
 
 #### resetPromise\<T\>(nameOrCustomPromise: string | ICustomPromise\<T\>)
 
@@ -547,11 +644,12 @@ const helloPromise = {
 
 promiseBatch.add(goodbyePromise);
 await promiseBatch.exec(helloPromise); // result = 'Hello World!'
-
-promiseBatch.observeStatus('HelloPromise').promiseStatus // PromiseStatus.Fulfilled
+promiseBatch.finishPromise(helloPromise);
+promiseBatch.observeStatus('HelloPromise') // { promiseStatus: PromiseStatus.Fulfilled, afterProcessingStatus: PromiseStatus.Fulfilled }
 promiseBatch.resetPromise('HelloPromise');
-promiseBatch.observeStatus('HelloPromise').promiseStatus // PromiseStatus.Pending
+promiseBatch.observeStatus('HelloPromise') // { promiseStatus: PromiseStatus.Pending, afterProcessingStatus: PromiseStatus.Pending }
 ```
+
 
 #### reset()
 

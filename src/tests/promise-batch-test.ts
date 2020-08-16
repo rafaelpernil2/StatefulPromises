@@ -52,20 +52,16 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>)',
     it('sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object', () => {
       const pb = new PromiseBatch();
       expect(pb.getStatusList()).to.eql({});
-      expect(pb.customPromiseList).to.eql({});
-      expect(pb.batchResponse).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
+      expect(pb.getBatchResponse()).to.eql({});
     });
   });
   context('given a customPromiseList is provided', () => {
     it('sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', () => {
       const pb = new PromiseBatch(examplePromiseList);
       expect(pb.getStatusList()).to.eql({});
-      const arrayified: ICustomPromise<unknown>[] = [];
-      Object.keys(pb.customPromiseList).forEach(promiseName => {
-        arrayified.push(pb.customPromiseList[promiseName]);
-      });
-      expect(arrayified).to.eql(examplePromiseList);
-      expect(pb.batchResponse).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql(examplePromiseList);
+      expect(pb.getBatchResponse()).to.eql({});
     });
   });
 });
@@ -75,7 +71,7 @@ describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>)', () => {
     it('Inserts customPromise inside customPromiseList ', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
-      expect(pb.customPromiseList[examplePromise.name]).to.eql(examplePromise);
+      expect(pb.getCustomPromiseList()).to.contain(examplePromise);
     });
   });
   context('given customPromise was not added before (has same promise name)', () => {
@@ -87,8 +83,8 @@ describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>)', () => {
       };
       pb.add(examplePromise);
       pb.add(cp2);
-      expect(pb.customPromiseList[examplePromise.name]).to.eql(examplePromise);
-      expect(pb.customPromiseList[examplePromise.name]).to.not.eql(cp2);
+      expect(pb.getCustomPromiseList()).to.contain(examplePromise);
+      expect(pb.getCustomPromiseList()).to.not.contain(cp2);
     });
   });
 });
@@ -98,16 +94,16 @@ describe('PromiseBatch.remove(nameOrCustomPromise: string | ICustomPromise<unkno
     it('does nothing', () => {
       const pb = new PromiseBatch();
       pb.remove('DoesNotExist');
-      expect(pb.customPromiseList).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
     });
   });
   context('given nameOrCustomPromise is a promise name whose promise is included in the PromiseBatch', () => {
     it('finds it and removes it', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
-      expect(pb.customPromiseList).to.eql({ [examplePromise.name]: examplePromise });
+      expect(pb.getCustomPromiseList()).to.eql([examplePromise]);
       pb.remove(examplePromise.name);
-      expect(pb.customPromiseList).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
     });
   });
 
@@ -115,16 +111,16 @@ describe('PromiseBatch.remove(nameOrCustomPromise: string | ICustomPromise<unkno
     it('does nothing', () => {
       const pb = new PromiseBatch();
       pb.remove(examplePromise);
-      expect(pb.customPromiseList).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
     });
   });
   context('given nameOrCustomPromise is a customPromise included in the PromiseBatch', () => {
     it('finds it and removes it', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
-      expect(pb.customPromiseList).to.eql({ [examplePromise.name]: examplePromise });
+      expect(pb.getCustomPromiseList()).to.eql([examplePromise]);
       pb.remove(examplePromise);
-      expect(pb.customPromiseList).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
     });
   });
 });
@@ -134,7 +130,7 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
     it('Inserts no customPromise inside customPromiseList', () => {
       const pb = new PromiseBatch();
       pb.addList([]);
-      expect(pb.customPromiseList).to.eql({});
+      expect(pb.getCustomPromiseList()).to.eql([]);
     });
   });
   context('given customPromiseList is not empty', () => {
@@ -142,7 +138,7 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
       const pb = new PromiseBatch();
       pb.addList(examplePromiseList);
       examplePromiseList.forEach(p => {
-        expect(pb.customPromiseList[p.name]).to.eql(p);
+        expect(pb.getCustomPromiseList()).to.contain(p);
       });
     });
   });
@@ -260,19 +256,19 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
         FailPromise: 'Rejected'
       };
 
-      expect(pb.batchResponse).to.eql(expectedRes);
+      expect(pb.getBatchResponse()).to.eql(expectedRes);
       expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
     });
   });
   context('given a promise list with callbacks inside was previously added, one promise rejects and a positive concurrencyLimit is passed', () => {
     it('throws a rejection but contains the result of the promise either way', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -287,8 +283,8 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -315,17 +311,17 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
         Promise2: `${DUMMY_MESSAGES.REJECTED}2`
       };
 
-      expect(pb.batchResponse).to.eql(expectedRes);
+      expect(pb.getBatchResponse()).to.eql(expectedRes);
       expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
     });
 
     it('the execution with a larger concurrentLimit takes less time', async () => {
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -340,8 +336,8 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -376,9 +372,9 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
         Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
       };
 
-      expect(pb1.batchResponse).to.eql(expectedRes);
+      expect(pb1.getBatchResponse()).to.eql(expectedRes);
       expect(result1).to.eql(result2);
-      expect(pb1.batchResponse).to.eql(pb2.batchResponse);
+      expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
       expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
     });
   });
@@ -494,12 +490,12 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
   context('given a promise list with callbacks inside was previously added, one promise rejects and a positive concurrencyLimit is passed', () => {
     it('throws a rejection but contains the result of the promise either way', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -514,8 +510,8 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -545,12 +541,12 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
       expect(result).to.eql(expectedRes);
     });
     it('the execution with a larger concurrentLimit takes less time', async () => {
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -565,8 +561,8 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -602,9 +598,9 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
         Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
       };
 
-      expect(pb1.batchResponse).to.eql(expectedRes);
+      expect(pb1.getBatchResponse()).to.eql(expectedRes);
       expect(result1).to.eql(result2);
-      expect(pb1.batchResponse).to.eql(pb2.batchResponse);
+      expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
       expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
     });
   });
@@ -614,12 +610,12 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
   context('given a set of promises with no one rejected', () => {
     it('calls all() with an empty list and returns an the same list as before and the promise list is the same', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -634,8 +630,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -662,18 +658,18 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
       };
       expect(result).to.eql(expectedRes);
-      expect(pb.customPromiseList).eql({ [newCpl[0].name]: newCpl[0], [newCpl[1].name]: newCpl[1] });
+      expect(pb.getCustomPromiseList()).eql(newCpl);
     });
   });
   context('given a set of promises with at least one rejected', () => {
     it('with no concurrentLimit, calls all() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -688,8 +684,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -722,12 +718,12 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
   context('given a zero concurrencyLimit is passed', () => {
     it('throws an execption regarding the zero concurrencyLimit', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -742,8 +738,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -774,12 +770,12 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
   context('given a negative concurrencyLimit is passed', () => {
     it('throws an execption regarding the negative concurrencyLimit', async () => {
       const pb = new PromiseBatch();
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.RESOLVED],
           cached: false,
           validate: (data: string): boolean => {
@@ -794,8 +790,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(0),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -825,12 +821,12 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
   });
   context('given a set of promises with at least one rejected, with a concurrentLimit specified', () => {
     it('the execution with a larger concurrentLimit takes less time', async () => {
-      const pu = new TestUtil();
+      const util = new TestUtil();
       const newCpl = [
         {
           name: 'Promise1',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -845,8 +841,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
         },
         {
           name: 'Promise2',
-          thisArg: pu,
-          function: pu.buildSingleParamFixedTimeCheckedPromise(100),
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(100),
           args: [DUMMY_MESSAGES.REJECTED],
           cached: false,
           validate: (data: string): boolean => {
@@ -928,7 +924,7 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       const result = await pb.exec(examplePromise.name);
-      expect(pb.batchResponse).to.eql({ GetSomething: [{ result: 'Resultd' }] });
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
       expect(result).to.eql([{ result: 'Resultd' }]);
     });
   });
@@ -937,7 +933,7 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
     it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse', async () => {
       const pb = new PromiseBatch();
       const result = await pb.exec(examplePromise);
-      expect(pb.batchResponse).to.eql({ GetSomething: [{ result: 'Resultd' }] });
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
       expect(result).to.eql([{ result: 'Resultd' }]);
     });
   });
@@ -955,7 +951,7 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
       } catch (error) {
         result = error;
       }
-      expect(pb.batchResponse).to.eql({ Test2: 'Test' });
+      expect(pb.getBatchResponse()).to.eql({ Test2: 'Test' });
       expect(result).to.eql('Test');
     });
   });
@@ -1250,12 +1246,82 @@ describe('PromiseBatch.observeStatus(nameOrCustomPromise: string | ICustomPromis
 });
 
 describe('PromiseBatch.getStatusList()', () => {
-  context('given statusObject is internally initalized', () => {
-    it('returns the status property of statusObject', async () => {
+  context('given no custom promise is executed', () => {
+    it('returns an empty object', () => {
+      const pb = new PromiseBatch();
+      pb.add(examplePromise);
+      expect(pb.getStatusList()).to.eql({});
+    });
+  });
+  context('given some custom promises are added and executed', () => {
+    it('returns the status property of each promise indexed by each name and name + AfterProcessing', async () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       await pb.all();
       expect(pb.getStatusList()).to.contain.keys([examplePromise.name, `${examplePromise.name}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`]);
+    });
+  });
+});
+
+describe('PromiseBatch.getCacheList()', () => {
+  context('given no custom promise is executed', () => {
+    it('returns an empty object', () => {
+      const pb = new PromiseBatch();
+      pb.add(examplePromise);
+      expect(pb.getCacheList()).to.eql({});
+    });
+  });
+  context('given some custom promise is executed but not cached', () => {
+    it('returns an empty object', async () => {
+      const pb = new PromiseBatch();
+      await pb.exec(examplePromiseList[0]);
+      expect(pb.getCacheList()).to.eql({});
+    });
+  });
+  context('given at least one custom promise is executed and cached', () => {
+    it('returns an object containing the cached value of the cached promises, indexed by custom promise name', async () => {
+      const pb = new PromiseBatch();
+      pb.add(examplePromise);
+      await pb.all();
+      expect(pb.getCacheList()).to.eql({ [examplePromise.name]: [{ result: 'Resultd' }] });
+    });
+  });
+});
+
+describe('PromiseBatch.getCustomPromiseList()', () => {
+  context('given no custom promise was added', () => {
+    it('returns an empty array', () => {
+      const pb = new PromiseBatch();
+      expect(pb.getCustomPromiseList()).to.eql([]);
+    });
+  });
+  context('given some custom promise was added', () => {
+    it('returns an array with all the custom promises previously added to the batch', () => {
+      const pb = new PromiseBatch();
+      pb.addList(examplePromiseList);
+      expect(pb.getCustomPromiseList()).to.eql(examplePromiseList);
+    });
+  });
+});
+
+describe('PromiseBatch.getBatchResponse()', () => {
+  context('given no custom promise of the batch was executed', () => {
+    it('returns an empty object', () => {
+      const pb = new PromiseBatch();
+      pb.add(examplePromise);
+      expect(pb.getBatchResponse()).to.eql({});
+    });
+  });
+  context('given some custom promise of the batch was executed', () => {
+    it('returns an object containing each custom promise execution response indexed by each promise name', async () => {
+      const pb = new PromiseBatch();
+      pb.addList(examplePromiseList);
+      await pb.all();
+      expect(pb.getBatchResponse()).to.contain.keys(examplePromiseList.map(p => p.name));
+      expect(pb.getBatchResponse()).to.eql({
+        [examplePromiseList[0].name]: { res: 'No input provided' },
+        [examplePromiseList[1].name]: { res: 'No input provided' }
+      });
     });
   });
 });
@@ -1294,7 +1360,7 @@ describe('PromiseBatch.reset()', () => {
     it('resets batchResponse and statusObject to an initial state', () => {
       const pb = new PromiseBatch();
       pb.reset();
-      expect(pb.batchResponse).to.eql({});
+      expect(pb.getBatchResponse()).to.eql({});
       expect(pb.getStatusList()).to.eql({});
     });
   });
@@ -1307,7 +1373,7 @@ describe('PromiseBatch.reset()', () => {
       pb.finishPromise(examplePromiseList[0]);
       await call;
       pb.reset();
-      expect(pb.batchResponse).to.eql({});
+      expect(pb.getBatchResponse()).to.eql({});
       expect(pb.getStatusList()).to.eql({});
     });
   });

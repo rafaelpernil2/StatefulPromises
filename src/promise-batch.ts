@@ -9,8 +9,8 @@ import { GLOBAL_CONSTANTS } from './constants/global-constants';
 import { STATUS_CALLBACK_MAP } from './constants/promise-status-maps';
 
 export class PromiseBatch {
-  public customPromiseList: Record<string, ICustomPromise<unknown>>;
-  public batchResponse: Record<string, unknown>;
+  private customPromiseList: Record<string, ICustomPromise<unknown>>;
+  private batchResponse: Record<string, unknown>;
   private statusObject: {
     Status: Record<string, ko.Observable<PromiseStatus>>;
     Cache: Record<string, unknown>;
@@ -57,6 +57,13 @@ export class PromiseBatch {
       return;
     }
     delete this.customPromiseList[promiseName];
+  }
+
+  /**
+   * Return the custom promise list in the batch
+   */
+  public getCustomPromiseList(): ICustomPromise<unknown>[] {
+    return Object.keys(this.customPromiseList).map(promiseName => this.customPromiseList[promiseName]);
   }
 
   /**
@@ -164,6 +171,13 @@ export class PromiseBatch {
    */
   public getCacheList(): Record<string, unknown> {
     return this.statusObject.Cache;
+  }
+
+  /**
+   * Returns the response of all executions in the batch
+   */
+  public getBatchResponse(): Record<string, unknown> {
+    return this.batchResponse;
   }
 
   /**
