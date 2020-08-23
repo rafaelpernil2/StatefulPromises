@@ -44,7 +44,7 @@ export class PromiseBatch {
    * @param customPromiseList A custom promise list
    */
   public addList(customPromiseList: ICustomPromise<unknown>[]): void {
-    customPromiseList.forEach(promise => this.add(promise));
+    customPromiseList.forEach(customPromise => this.add(customPromise));
   }
 
   /**
@@ -52,18 +52,18 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public remove(nameOrCustomPromise: string | ICustomPromise<unknown>): void {
-    const promiseName = this.getPromiseName(nameOrCustomPromise);
-    if (!this.customPromiseList.hasOwnProperty(promiseName)) {
+    const customPromiseName = this.getCustomPromiseName(nameOrCustomPromise);
+    if (!this.customPromiseList.hasOwnProperty(customPromiseName)) {
       return;
     }
-    delete this.customPromiseList[promiseName];
+    delete this.customPromiseList[customPromiseName];
   }
 
   /**
    * Return the custom promise list in the batch
    */
   public getCustomPromiseList(): ICustomPromise<unknown>[] {
-    return Object.keys(this.customPromiseList).map(promiseName => this.customPromiseList[promiseName]);
+    return Object.keys(this.customPromiseList).map(customPromiseName => this.customPromiseList[customPromiseName]);
   }
 
   /**
@@ -71,36 +71,35 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise to look up in the batch or the custom promise itself
    */
   public async exec<T>(nameOrCustomPromise: string | ICustomPromise<T>): Promise<T | undefined> {
-    const customPromise = this.getPromiseData<T>(nameOrCustomPromise);
+    const customPromise = this.getCustomPromiseData<T>(nameOrCustomPromise);
     this.add(customPromise);
-    const response = await this.doExec<T>(customPromise);
-    return this.buildStatefulResponsePromise({ status: this.observeStatus(customPromise)?.promiseStatus, response });
+    return this.buildStatefulResponsePromise(await this.doExec<T>(customPromise));
   }
 
   /**
    * Like Promise.all(): Executes the whole list of custom promises and appends the fulfilled results in an object
-   * @param concurrentLimit Limits how many promises are executed at the same time
+   * @param concurrencyLimit Limits how many promises are executed at the same time
    */
-  public all(concurrentLimit?: number): Promise<Record<string, unknown>> {
-    return this.doExecAll(this.customPromiseList, BatchMode.All, concurrentLimit);
+  public all(concurrencyLimit?: number): Promise<Record<string, unknown>> {
+    return this.doExecAll(this.customPromiseList, BatchMode.All, concurrencyLimit);
   }
 
   /**
    * Like Promise.allSettled(): Executes the whole lsit of custom promises and appends the fulfilled and rejected results in an object
-   * @param concurrentLimit Limits how many promises are executed at the same time
+   * @param concurrencyLimit Limits how many promises are executed at the same time
    */
-  public allSettled(concurrentLimit?: number): Promise<Record<string, unknown>> {
-    return this.doExecAll(this.customPromiseList, BatchMode.AllSettled, concurrentLimit);
+  public allSettled(concurrencyLimit?: number): Promise<Record<string, unknown>> {
+    return this.doExecAll(this.customPromiseList, BatchMode.AllSettled, concurrencyLimit);
   }
 
   /**
-   * If some promises were rejected executing .all, this method retries those rejected promises and returns the ones that fail again
-   * @param concurrentLimit Limits how many promises are executed at the same time
+   * If some promises were rejected executing .all, this method retries those rejected promises and returns the ones that failed this time
+   * @param concurrencyLimit Limits how many promises are executed at the same time
    */
-  public retryRejected(concurrentLimit?: number): Promise<Record<string, unknown>> {
-    const rejectedPromises = this.getRejectedPromises();
-    this.resetRejectedPromises();
-    return this.doExecAll(rejectedPromises, BatchMode.All, concurrentLimit);
+  public retryRejected(concurrencyLimit?: number): Promise<Record<string, unknown>> {
+    const rejectedCustomPromiseList = this.getRejectedCustomPromiseList();
+    this.resetRejectedCustomPromises();
+    return this.doExecAll(rejectedCustomPromiseList, BatchMode.All, concurrencyLimit);
   }
 
   /**
@@ -108,7 +107,7 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public finishPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
-    const customPromise = this.getPromiseData<T>(nameOrCustomPromise);
+    const customPromise = this.getCustomPromiseData<T>(nameOrCustomPromise);
     // This makes sure the done and catch callbacks are executed without race conditions
     if (customPromise?.doneCallback || customPromise?.catchCallback) {
       return;
@@ -120,7 +119,7 @@ export class PromiseBatch {
    * Marks as finished all promises of this instance
    */
   public finishAllPromises(): void {
-    Object.keys(this.customPromiseList).forEach(promiseName => this.finishPromise(promiseName));
+    Object.keys(this.customPromiseList).forEach(customPromiseName => this.finishPromise(customPromiseName));
   }
 
   /**
@@ -152,11 +151,11 @@ export class PromiseBatch {
    * @param nameOrCustomPromise Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
-    const promiseName = this.getPromiseName(nameOrCustomPromise);
-    if (!(this.isStatusInitialized(promiseName) && this.isStatusInitialized(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`))) {
+    const customPromiseName = this.getCustomPromiseName(nameOrCustomPromise);
+    if (!(this.isStatusInitialized(customPromiseName) && this.isStatusInitialized(`${customPromiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`))) {
       return;
     }
-    this.createStatus(promiseName);
+    this.createStatus(customPromiseName);
   }
 
   /**
@@ -182,13 +181,13 @@ export class PromiseBatch {
 
   /**
    * Returns the current statuses of a customPromise, the promise status and the "after processing" status
-   * @param promiseName Either the name of the custom promise or the custom promise whose "name" property will be used
+   * @param customPromiseName Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public observeStatus(nameOrCustomPromise: string | ICustomPromise<unknown>): IPromiseState {
-    const promiseName = this.getPromiseName(nameOrCustomPromise);
-    const afterProcessingName = `${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`;
+    const customPromiseName = this.getCustomPromiseName(nameOrCustomPromise);
+    const afterProcessingName = `${customPromiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`;
     return {
-      ...(this.isStatusInitialized(promiseName) && { promiseStatus: this.statusObject.Status[promiseName]() }),
+      ...(this.isStatusInitialized(customPromiseName) && { promiseStatus: this.statusObject.Status[customPromiseName]() }),
       ...(this.isStatusInitialized(afterProcessingName) && { afterProcessingStatus: this.statusObject.Status[afterProcessingName]() })
     };
   }
@@ -207,30 +206,30 @@ export class PromiseBatch {
 
   // Private functions
 
-  private initStatus(promiseName: string): void {
-    if (this.isStatusInitialized(promiseName) && this.isStatusInitialized(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`)) {
+  private initStatus(customPromiseName: string): void {
+    if (this.isStatusInitialized(customPromiseName) && this.isStatusInitialized(`${customPromiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`)) {
       return;
     }
-    this.createStatus(promiseName);
+    this.createStatus(customPromiseName);
   }
 
-  private createStatus(promiseName: string): void {
-    this.statusObject.Status[promiseName] = ko.observable(PromiseStatus.Pending);
-    this.statusObject.Status[`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`] = ko.observable(PromiseStatus.Pending);
+  private createStatus(customPromiseName: string): void {
+    this.statusObject.Status[customPromiseName] = ko.observable(PromiseStatus.Pending);
+    this.statusObject.Status[`${customPromiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`] = ko.observable(PromiseStatus.Pending);
   }
 
-  private updateStatus(promiseName: string, newStatus: PromiseStatus): void {
-    if (!(this.isStatusInitialized(promiseName) && this.isStatusValid(promiseName, newStatus))) {
+  private updateStatus(customPromiseName: string, newStatus: PromiseStatus): void {
+    if (!(this.isStatusInitialized(customPromiseName) && this.isStatusValid(customPromiseName, newStatus))) {
       return;
     }
-    this.statusObject.Status[promiseName](newStatus);
+    this.statusObject.Status[customPromiseName](newStatus);
   }
 
-  private getCachedResponse<T>(promiseName: string): T {
-    if (!this.statusObject.Cache?.[promiseName]) {
+  private getCachedResponse<T>(customPromiseName: string): T {
+    if (!this.statusObject.Cache?.[customPromiseName]) {
       throw new Error(ERROR_MSG.NO_CACHED_VALUE);
     }
-    return this.statusObject.Cache[promiseName] as T;
+    return this.statusObject.Cache[customPromiseName] as T;
   }
 
   private addCachedResponse<T>(customPromise: ICustomPromise<T>, response: T): void {
@@ -240,55 +239,55 @@ export class PromiseBatch {
     this.statusObject.Cache[customPromise.name] = typeof response === 'object' ? JSON.parse(JSON.stringify(response)) : response;
   }
 
-  private getRejectedPromiseNames(): string[] {
-    return Object.keys(this.customPromiseList).filter(promiseName => this.observeStatus(promiseName)?.promiseStatus === PromiseStatus.Rejected);
+  private getRejectedCustomPromisesNameList(): string[] {
+    return Object.keys(this.customPromiseList).filter(customPromiseName => this.observeStatus(customPromiseName)?.promiseStatus === PromiseStatus.Rejected);
   }
 
-  private resetRejectedPromises(): void {
-    this.getRejectedPromiseNames().forEach(promiseName => this.resetPromise(promiseName));
+  private resetRejectedCustomPromises(): void {
+    this.getRejectedCustomPromisesNameList().forEach(customPromiseName => this.resetPromise(customPromiseName));
   }
 
-  private notifyAsFinished(promiseName: string): void {
-    this.updateStatus(`${promiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
+  private notifyAsFinished(customPromiseName: string): void {
+    this.updateStatus(`${customPromiseName}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`, PromiseStatus.Fulfilled);
   }
 
-  private isStatusValid(promiseName: string, status: PromiseStatus): boolean {
+  private isStatusValid(customPromiseName: string, status: PromiseStatus): boolean {
     // afterProcessing status can't be rejected, it only can be Fulfilled or Pending
-    return !promiseName.endsWith(GLOBAL_CONSTANTS.AFTER_PROCESSING) || status !== PromiseStatus.Rejected;
+    return !customPromiseName.endsWith(GLOBAL_CONSTANTS.AFTER_PROCESSING) || status !== PromiseStatus.Rejected;
   }
 
-  private isStatusInitialized(promiseName: string): boolean {
+  private isStatusInitialized(customPromiseName: string): boolean {
     // A Knockouut obervable has a function to set and observe its value when it is initialized
-    return typeof this.statusObject?.Status?.[promiseName] === 'function';
+    return typeof this.statusObject?.Status?.[customPromiseName] === 'function';
   }
 
-  private isPromiseInResponse(promiseName: string): boolean {
-    return this.batchResponse.hasOwnProperty(promiseName);
+  private isPromiseInResponse(customPromiseName: string): boolean {
+    return this.batchResponse.hasOwnProperty(customPromiseName);
   }
 
-  private isPromiseReset(promiseName: string): boolean {
-    return this.isPromiseInResponse(promiseName) && this.observeStatus(promiseName)?.promiseStatus === PromiseStatus.Pending;
+  private isPromiseReset(customPromiseName: string): boolean {
+    return this.isPromiseInResponse(customPromiseName) && this.observeStatus(customPromiseName)?.promiseStatus === PromiseStatus.Pending;
   }
 
-  private shouldSaveResult(promiseName: string): boolean {
-    return !this.isPromiseInResponse(promiseName) || this.isPromiseReset(promiseName);
+  private shouldSaveResult(customPromiseName: string): boolean {
+    return !this.isPromiseInResponse(customPromiseName) || this.isPromiseReset(customPromiseName);
   }
 
-  private async doExec<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
+  private async doExec<T>(customPromise: ICustomPromise<T>): Promise<IStatefulResponse<T | undefined>> {
     const shouldSave = this.shouldSaveResult(customPromise.name);
     const result = await this.execStatefulPromise<T>(customPromise);
     if (!shouldSave) {
       return result;
     }
-    this.batchResponse[customPromise.name] = result;
+    this.batchResponse[customPromise.name] = result.value;
     return result;
   }
 
-  private async doExecAll(customPromiseList: Record<string, ICustomPromise<unknown>>, mode: BatchMode, concurrentLimit?: number): Promise<Record<string, unknown>> {
-    await this.execAll(customPromiseList, concurrentLimit);
+  private async doExecAll(customPromiseList: Record<string, ICustomPromise<unknown>>, mode: BatchMode, concurrencyLimit?: number): Promise<Record<string, unknown>> {
+    await this.execAll(customPromiseList, concurrencyLimit);
     const awaitedStatus = mode === BatchMode.All ? await this.isBatchFulfilled() : await this.isBatchCompleted();
     const errors = {
-      [BatchMode.All]: `${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.getRejectedPromiseNames()} `,
+      [BatchMode.All]: `${ERROR_MSG.SOME_PROMISE_REJECTED}: ${this.getRejectedCustomPromisesNameList()} `,
       [BatchMode.AllSettled]: ERROR_MSG.SOME_PROMISE_STILL_RUNNING
     };
     if (!awaitedStatus) {
@@ -297,12 +296,12 @@ export class PromiseBatch {
     return this.batchResponse;
   }
 
-  private async execAll(customPromiseList: Record<string, ICustomPromise<unknown>>, concurrentLimit?: number): Promise<void> {
+  private async execAll(customPromiseList: Record<string, ICustomPromise<unknown>>, concurrencyLimit?: number): Promise<void> {
     const promisesInProgress = [];
     const promiseNameList = Object.keys(customPromiseList);
     // Initialize the status in all promises because they cannot be handled otherwise
-    promiseNameList.forEach(promiseName => this.initStatus(promiseName));
-    const execLimit = this.checkConcurrentLimit(promiseNameList, concurrentLimit);
+    promiseNameList.forEach(customPromiseName => this.initStatus(customPromiseName));
+    const execLimit = this.checkconcurrencyLimit(promiseNameList, concurrencyLimit);
     for (let index = 0; index < execLimit; index++) {
       promisesInProgress.push(this.execAllRec(customPromiseList, customPromiseList[promiseNameList[index]], promiseNameList.slice(execLimit)));
     }
@@ -324,19 +323,19 @@ export class PromiseBatch {
     await this.execAllRec(customPromiseList, customPromiseList[nextPromiseName], awaitingPromiseNameList);
   }
 
-  private getRejectedPromises(): Record<string, ICustomPromise<unknown>> {
-    const rejectedNames = this.getRejectedPromiseNames();
+  private getRejectedCustomPromiseList(): Record<string, ICustomPromise<unknown>> {
+    const rejectedNames = this.getRejectedCustomPromisesNameList();
     return Object.keys(this.customPromiseList)
-      .filter(promiseName => rejectedNames.includes(promiseName))
-      .map(promiseName => ({ [promiseName]: this.customPromiseList[promiseName] }))
+      .filter(customPromiseName => rejectedNames.includes(customPromiseName))
+      .map(customPromiseName => ({ [customPromiseName]: this.customPromiseList[customPromiseName] }))
       .reduce((acc, curr) => ({ ...acc, ...curr }), {});
   }
 
-  private getPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): string {
+  private getCustomPromiseName<T>(nameOrCustomPromise: string | ICustomPromise<T>): string {
     return typeof nameOrCustomPromise === 'string' ? nameOrCustomPromise : nameOrCustomPromise.name;
   }
 
-  private getPromiseData<T>(nameOrCustomPromise: string | ICustomPromise<T>): ICustomPromise<T> {
+  private getCustomPromiseData<T>(nameOrCustomPromise: string | ICustomPromise<T>): ICustomPromise<T> {
     if (typeof nameOrCustomPromise === 'object') {
       return nameOrCustomPromise;
     }
@@ -346,9 +345,9 @@ export class PromiseBatch {
     return this.customPromiseList[nameOrCustomPromise] as ICustomPromise<T>;
   }
 
-  private async execStatefulPromise<T>(customPromise: ICustomPromise<T>): Promise<T | undefined> {
+  private async execStatefulPromise<T>(customPromise: ICustomPromise<T>): Promise<IStatefulResponse<T | undefined>> {
     if (customPromise?.cached && this.observeStatus(customPromise)?.promiseStatus === PromiseStatus.Fulfilled) {
-      return this.getCachedResponse<T>(customPromise.name);
+      return { status: PromiseStatus.Fulfilled, value: this.getCachedResponse<T>(customPromise.name) };
     }
     try {
       this.initStatus(customPromise.name);
@@ -358,18 +357,18 @@ export class PromiseBatch {
     }
   }
 
-  private execCallbacks<T>(customPromise: ICustomPromise<T>, data: IStatefulResponse<T>): void {
-    this.updateStatus(customPromise.name, data.status ?? PromiseStatus.Pending);
-    const statusRelCallback = STATUS_CALLBACK_MAP[data.status ?? PromiseStatus.Pending];
+  private execCallbacks<T>(customPromise: ICustomPromise<T>, statefulResponse: IStatefulResponse<T>): void {
+    this.updateStatus(customPromise.name, statefulResponse.status ?? PromiseStatus.Pending);
+    const statusRelCallback = STATUS_CALLBACK_MAP[statefulResponse.status ?? PromiseStatus.Pending];
     const { hasDoneOrCatch, hasFinally } = this.checkCallbacks(customPromise, statusRelCallback);
     if (!statusRelCallback || !(hasDoneOrCatch || hasFinally)) {
       return;
     }
     if (hasDoneOrCatch) {
-      data.response = customPromise[statusRelCallback]?.call(null, data.response);
+      statefulResponse.value = customPromise[statusRelCallback]?.call(null, statefulResponse.value);
     }
     if (hasFinally) {
-      data.response = customPromise.finallyCallback?.(data.response);
+      statefulResponse.value = customPromise.finallyCallback?.(statefulResponse.value);
     }
     this.notifyAsFinished(customPromise.name);
   }
@@ -385,23 +384,23 @@ export class PromiseBatch {
     return callback === 'doneCallback' || callback === 'catchCallback';
   }
 
-  private execValidate<T>(customPromise: ICustomPromise<T>, data: IStatefulResponse<T>): void {
+  private execValidate<T>(customPromise: ICustomPromise<T>, statefulResponse: IStatefulResponse<T>): void {
     if (!customPromise?.validate) {
-      data.status = PromiseStatus.Fulfilled;
+      statefulResponse.status = PromiseStatus.Fulfilled;
       return;
     }
-    const clonedResponse = typeof data.response === 'object' ? JSON.parse(JSON.stringify(data.response)) : data.response;
-    data.status = customPromise.validate(clonedResponse) ? PromiseStatus.Fulfilled : PromiseStatus.Rejected;
+    const clonedResponse = typeof statefulResponse.value === 'object' ? JSON.parse(JSON.stringify(statefulResponse.value)) : statefulResponse.value;
+    statefulResponse.status = customPromise.validate(clonedResponse) ? PromiseStatus.Fulfilled : PromiseStatus.Rejected;
   }
 
-  private buildStatefulResponsePromise<T>({ status, response }: IStatefulResponse<T>): Promise<T> {
+  private buildStatefulResponsePromise<T>({ status, value }: IStatefulResponse<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       switch (status) {
         case PromiseStatus.Fulfilled:
-          resolve(response);
+          resolve(value);
           break;
         case PromiseStatus.Rejected:
-          reject(response);
+          reject(value);
           break;
         default:
           reject(ERROR_MSG.PENDING_STATUS);
@@ -410,27 +409,27 @@ export class PromiseBatch {
     });
   }
 
-  private checkConcurrentLimit(promiseNameList: string[], concurrentLimit?: number): number {
-    if (concurrentLimit === undefined || concurrentLimit > promiseNameList.length) {
+  private checkconcurrencyLimit(promiseNameList: string[], concurrencyLimit?: number): number {
+    if (concurrencyLimit === undefined || concurrencyLimit > promiseNameList.length) {
       return promiseNameList.length;
     }
-    if (concurrentLimit <= 0) {
+    if (concurrencyLimit <= 0) {
       throw new Error(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     }
-    return concurrentLimit;
+    return concurrencyLimit;
   }
 
-  private processFulfillment<T>(customPromise: ICustomPromise<T>, response: T): Promise<T> {
-    const statefulResponse: IStatefulResponse<T> = { response };
+  private processFulfillment<T>(customPromise: ICustomPromise<T>, value: T): IStatefulResponse<T> {
+    const statefulResponse = { status: PromiseStatus.Fulfilled, value };
     this.execValidate(customPromise, statefulResponse);
     this.execCallbacks(customPromise, statefulResponse);
-    this.addCachedResponse(customPromise, statefulResponse.response);
-    return this.buildStatefulResponsePromise<T>(statefulResponse);
+    this.addCachedResponse(customPromise, statefulResponse.value);
+    return statefulResponse;
   }
 
-  private processRejection<T>(customPromise: ICustomPromise<T>, response: T): T {
-    const statefulResponse = { status: PromiseStatus.Rejected, response };
+  private processRejection<T>(customPromise: ICustomPromise<T>, value: T): IStatefulResponse<T> {
+    const statefulResponse = { status: PromiseStatus.Rejected, value };
     this.execCallbacks(customPromise, statefulResponse);
-    return statefulResponse.response;
+    return statefulResponse;
   }
 }

@@ -144,7 +144,7 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
   });
 });
 
-describe('PromiseBatch.all(concurrentLimit?: number)', () => {
+describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
   context('given no promise list was previously added and no concurrencyLimit is passed', () => {
     it('returns an empty object inmediately', async () => {
       const pb = new PromiseBatch();
@@ -315,7 +315,7 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
       expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
     });
 
-    it('the execution with a larger concurrentLimit takes less time', async () => {
+    it('the execution with a larger concurrencyLimit takes less time', async () => {
       const util = new TestUtil();
       const newCpl = [
         {
@@ -380,7 +380,7 @@ describe('PromiseBatch.all(concurrentLimit?: number)', () => {
   });
 });
 
-describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
+describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
   context('given no promise list was previously added and no concurrencyLimit is passed', () => {
     it('returns an empty object inmediately', async () => {
       const pb = new PromiseBatch();
@@ -540,7 +540,7 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
 
       expect(result).to.eql(expectedRes);
     });
-    it('the execution with a larger concurrentLimit takes less time', async () => {
+    it('the execution with a larger concurrencyLimit takes less time', async () => {
       const util = new TestUtil();
       const newCpl = [
         {
@@ -606,7 +606,7 @@ describe('PromiseBatch.allSettled(concurrentLimit?: number)', () => {
   });
 });
 
-describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
+describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
   context('given a set of promises with no one rejected', () => {
     it('calls all() with an empty list and returns an the same list as before and the promise list is the same', async () => {
       const pb = new PromiseBatch();
@@ -662,7 +662,7 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
     });
   });
   context('given a set of promises with at least one rejected', () => {
-    it('with no concurrentLimit, calls all() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
+    it('with no concurrencyLimit, calls all() with a diff list and returns the same list with the updated results and the promise list is empty', async () => {
       const pb = new PromiseBatch();
       const util = new TestUtil();
       const newCpl = [
@@ -819,8 +819,8 @@ describe('PromiseBatch.retryRejected(concurrentLimit?: number)', () => {
       expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
-  context('given a set of promises with at least one rejected, with a concurrentLimit specified', () => {
-    it('the execution with a larger concurrentLimit takes less time', async () => {
+  context('given a set of promises with at least one rejected, with a concurrencyLimit specified', () => {
+    it('the execution with a larger concurrencyLimit takes less time', async () => {
       const util = new TestUtil();
       const newCpl = [
         {
