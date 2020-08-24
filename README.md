@@ -48,7 +48,7 @@ StatefulPromises solves that problem with some more thought put into it.
 
 ## Features
 
-* Custom interface to extend [JS Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) functionality and syntax (see [ICustomPromise\<T\>](#icustompromiset))
+* [ICustomPromise\<T\>](#icustompromiset) a.k.a. "custom promise", an interface to extend [JS Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) functionality and syntax.
 * Execution of single-use custom promise batches:
   * One by one with [exec](#exectnameorcustompromise-string--icustompromiset).
   * Concurrently limited with [all](#allconcurrencyLimit-number) and [allSettled](#allSettledconcurrencyLimit-number).
@@ -57,7 +57,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to custom promise status at any time with [observeStatus](#observestatusnameorcustompromise-string--icustompromiseunknown).
 
-* Automated Test Suite: 72 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`
+* Automated Test Suite: 72 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 
@@ -76,7 +76,11 @@ Specifies the name of the custom promise.
 
 Specifies the function to be called, that has to return a `PromiseLike<T>`, being T the parameter of the interface.
 
-These two properties are mandatory. Here is an example:
+##### Important note:
+
+> `name` and `function` properties are mandatory.
+
+##### Example:
 ```typescript
 const customPromise: ICustomPromise<string> = {
   name: 'HelloPromise',
@@ -239,7 +243,7 @@ promiseBatch.exec(customPromise).then((response)=>{
 
 This class provides a set of methods for working statefully with a single use set of Promises. Each PromiseBatch has a set of customPromises to execute either using [exec](#exectnameorcustompromise-string--icustompromiset) for individual execution, [all](#allconcurrencyLimit-number) or [allSettled](#allSettledconcurrencyLimit-number) for batch execution, while providing methods to retry failed promises, check statuses or notify promises as finished for making sure all `.then` post-processing is done without race conditions.
 
-By desing, it is a single use batch to avoid expensive calls to functions when the current result is already loaded and remains valid. Also, it allows to keep track of different sets of executions thus creating a more organized code base.
+By desing, it is a single-use batch to avoid expensive calls to functions when the current result is already loaded and remains valid. Also, it allows to keep track of different sets of executions, thus, creating a more organized code base.
 
 
 ##### Initialization:
@@ -303,7 +307,7 @@ promiseBatch.addList(customPromiseList);
 
 #### getCustomPromiseList()
 
-Returns the list of custom promises previously added using [add](#addtcustompromise-icustompromiset) or [addList](#addlistcustompromiselist-arrayicustompromiseunknown) or at [initialization](#initialization)
+Returns the list of custom promises previously added using [add](#addtcustompromise-icustompromiset) or [addList](#addlistcustompromiselist-arrayicustompromiseunknown) or at [initialization](#initialization).
 
 ##### Example:
 ```typescript
@@ -348,7 +352,7 @@ Your classic Promise.all() but:
 * Saves all results no matter what.
 * Saves all results in an object using the name of each custom promise as a key instead of an array.
 * Provides an optional concurrency limit for specifying how many promises you want to execute in parallel.
-* Throws an error describing which promises have been rejected
+* Throws an error describing which promises have been rejected.
 
 ##### Important note:
 
@@ -628,7 +632,7 @@ promiseBatch.observeStatus('HelloPromise');
 
 #### getStatusList()
 
-Returns an object with the promise and "after processing" status of all custom promises in the batch at that given point in time.
+Returns an object with the current promise and "after processing" status of all custom promises in the batch.
 
 ##### Example:
 ```typescript

@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import * as cp from 'child_process';
 import * as path from 'path';
 import ko from 'knockout';
@@ -9,7 +8,6 @@ import { PromiseBatch } from '../promise-batch';
 import { DUMMY_MESSAGES, TestUtil, SIMPLE_TEST } from '../utils/test-util';
 import { PromiseStatus } from '../types/promise-status';
 import { ERROR_MSG } from '../constants/error-messages';
-import { GLOBAL_CONSTANTS } from '../constants/global-constants';
 
 const timeout = 5000;
 
@@ -59,7 +57,7 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>)',
   context('given a customPromiseList is provided', () => {
     it('sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', () => {
       const pb = new PromiseBatch(examplePromiseList);
-      expect(pb.getStatusList()).to.eql({});
+      expect(pb.getStatusList()).to.contain.keys(examplePromiseList.map(promise => promise.name));
       expect(pb.getCustomPromiseList()).to.eql(examplePromiseList);
       expect(pb.getBatchResponse()).to.eql({});
     });
@@ -908,7 +906,7 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
 
 describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)', () => {
   context('given nameOrCustomPromise is a promise name whose promise is not included in the PromiseBatch', () => {
-    it(`it throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, async () => {
+    it(`throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, async () => {
       const pb = new PromiseBatch();
       let result;
       try {
@@ -1169,7 +1167,7 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
     });
   });
   context('given the name of a promise not included in the batch', () => {
-    it(`it throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, () => {
+    it(`throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}"`, () => {
       const pb = new PromiseBatch();
       let result;
       try {
@@ -1237,10 +1235,15 @@ describe('PromiseBatch.observeStatus(nameOrCustomPromise: string | ICustomPromis
     });
   });
   context('given it was not initialized', () => {
-    it('returns undefined', () => {
+    it(`throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}`, () => {
       const pb = new PromiseBatch();
-      expect(pb.observeStatus(key).promiseStatus).to.be.eq(undefined);
-      expect(pb.observeStatus(key).afterProcessingStatus).to.be.eq(undefined);
+      let result;
+      try {
+        result = pb.observeStatus(key);
+      } catch (error) {
+        result = error;
+      }
+      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
     });
   });
 });
@@ -1250,7 +1253,7 @@ describe('PromiseBatch.getStatusList()', () => {
     it('returns an empty object', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
-      expect(pb.getStatusList()).to.eql({});
+      expect(pb.getStatusList()).to.eql({ [examplePromise.name]: { promiseStatus: PromiseStatus.Pending, afterProcessingStatus: PromiseStatus.Pending } });
     });
   });
   context('given some custom promises are added and executed', () => {
@@ -1258,7 +1261,9 @@ describe('PromiseBatch.getStatusList()', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       await pb.all();
-      expect(pb.getStatusList()).to.contain.keys([examplePromise.name, `${examplePromise.name}${GLOBAL_CONSTANTS.AFTER_PROCESSING}`]);
+      expect(pb.getStatusList()).to.contain.keys([examplePromise.name]);
+      expect(pb.getStatusList()[examplePromise.name].promiseStatus).to.not.eql(PromiseStatus.Pending);
+      expect(pb.getStatusList()[examplePromise.name].afterProcessingStatus).to.not.eql(PromiseStatus.Pending);
     });
   });
 });
@@ -1356,14 +1361,20 @@ describe('PromiseBatch.getBatchResponse()', () => {
 
 describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>)', () => {
   context('given the name or customPromise provided does not exist', () => {
-    it('does nothing', async () => {
+    it(`throws an error containing "${ERROR_MSG.INVALID_PROMISE_NAME}`, async () => {
       const pb = new PromiseBatch();
       const promiseName = 'nonContained';
       pb.addList(examplePromiseList);
-      await pb.all();
-      pb.resetPromise(promiseName);
+      let result;
+      try {
+        await pb.all();
+        pb.resetPromise(promiseName);
+      } catch (error) {
+        result = error;
+      }
+      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
       Object.keys(pb.getStatusList()).forEach(key => {
-        expect(pb.observeStatus(key).promiseStatus).to.equal(PromiseStatus.Fulfilled);
+        expect(pb.getStatusList()[key].promiseStatus).to.equal(PromiseStatus.Fulfilled);
       });
     });
   });
@@ -1402,7 +1413,7 @@ describe('PromiseBatch.reset()', () => {
       await call;
       pb.reset();
       expect(pb.getBatchResponse()).to.eql({});
-      expect(pb.getStatusList()).to.eql({});
+      expect(pb.getStatusList()).to.eql({ [examplePromiseList[0].name]: { promiseStatus: PromiseStatus.Pending, afterProcessingStatus: PromiseStatus.Pending } });
     });
   });
 });
