@@ -57,7 +57,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to custom promise status at any time with [observeStatus](#observestatusnameorcustompromise-string--icustompromiseunknown).
 
-* Automated Test Suite: 70 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`
+* Automated Test Suite: 72 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 
@@ -628,11 +628,11 @@ promiseBatch.observeStatus('HelloPromise');
 
 #### getStatusList()
 
-Returns an object with the statuses of all custom promises in the batch. Each status property is a Knockout Observable variable.
+Returns an object with the promise and "after processing" status of all custom promises in the batch at that given point in time.
 
 ##### Example:
 ```typescript
-const statusList = promiseBatch.getStatusList(); // statusList = { HelloPromise: function(), ... }
+const statusList = promiseBatch.getStatusList(); // statusList = { HelloPromise: { promiseStatus: PromiseStatus.Fulfilled, afterProcessingStatus: PromiseStatus.Pending }, ... }
 ```
 
 

@@ -1286,6 +1286,34 @@ describe('PromiseBatch.getCacheList()', () => {
       expect(pb.getCacheList()).to.eql({ [examplePromise.name]: [{ result: 'Resultd' }] });
     });
   });
+  context('given some custom promise with cached property as true is executed and its function returns a rejected promise', () => {
+    it('returns an empty object', async () => {
+      const rejectedPromise: ICustomPromise<string> = {
+        name: 'Test2',
+        function: () => Promise.reject('Test')
+      };
+      const pb = new PromiseBatch();
+      pb.add(rejectedPromise);
+      await pb.allSettled();
+      expect(pb.getCacheList()).to.eql({});
+    });
+  });
+
+  context('given some custom promise with cached property as true is executed and its result is invalid (validate returns false)', () => {
+    it('returns an empty object', async () => {
+      const invalidPromise: ICustomPromise<object[]> = {
+        ...examplePromise,
+        validate: () => {
+          return false;
+        }
+      };
+
+      const pb = new PromiseBatch();
+      pb.add(invalidPromise);
+      await pb.allSettled();
+      expect(pb.getCacheList()).to.eql({});
+    });
+  });
 });
 
 describe('PromiseBatch.getCustomPromiseList()', () => {
