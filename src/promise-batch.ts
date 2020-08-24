@@ -156,7 +156,8 @@ export class PromiseBatch {
    */
   public getCacheList(): Record<string, unknown> {
     return Array.from(this.customPromiseDataMap.entries())
-      .map(([key, value]) => ({ ...(!!value.cache && { [key]: value.cache }) } as Record<string, unknown>))
+      .filter(([, value]) => !!value.cache)
+      .map(([key, value]) => ({ [key]: value.cache }))
       .reduce((cacheMap, currentCachedResult) => ({ ...cacheMap, ...currentCachedResult }), {});
   }
 
