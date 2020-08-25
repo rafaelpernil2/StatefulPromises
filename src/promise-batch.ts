@@ -26,7 +26,7 @@ export class PromiseBatch {
     if (this.isCustomPromiseInBatch(customPromise.name)) {
       return;
     }
-    this.customPromiseDataMap.set(customPromise.name, { customPromise, status: this.initStatus() });
+    this.customPromiseDataMap.set(customPromise.name, { customPromise, status: this.resetStatus() });
   }
 
   /**
@@ -113,7 +113,7 @@ export class PromiseBatch {
    */
   public async isBatchCompleted(): Promise<boolean> {
     const checkIsBatchCompleted: () => boolean = () =>
-      Array.from(this.customPromiseDataMap.values()).every(customPromiseData => !customPromiseData.status.map(innerStatus => innerStatus()).includes(PromiseStatus.Pending));
+      Array.from(this.customPromiseDataMap.values()).every(customPromiseData => customPromiseData.status.every(innerStatus => this.isStatusSettled(innerStatus())));
     if (checkIsBatchCompleted()) {
       return true;
     }
@@ -139,7 +139,7 @@ export class PromiseBatch {
    */
   public resetPromise<T>(nameOrCustomPromise: string | ICustomPromise<T>): void {
     const customPromiseName = this.getCustomPromiseName(nameOrCustomPromise);
-    this.getCustomPromiseData(customPromiseName).status = this.initStatus();
+    this.getCustomPromiseData(customPromiseName).status = this.resetStatus();
   }
 
   /**
@@ -187,14 +187,20 @@ export class PromiseBatch {
    */
   public reset(): void {
     for (const [key, { customPromise }] of this.customPromiseDataMap.entries()) {
-      this.customPromiseDataMap.set(key, { customPromise, status: this.initStatus() });
+      this.customPromiseDataMap.set(key, { customPromise, status: this.resetStatus() });
     }
   }
 
   // Private functions
 
-  private initStatus(): [ko.Observable<PromiseStatus>, ko.Observable<PromiseStatus>] {
-    return [ko.observable(PromiseStatus.Pending), ko.observable(PromiseStatus.Pending)];
+  private initStatus<T>(customPromise: ICustomPromise<T>): void {
+    const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(customPromise.name).status;
+    promiseStatus(PromiseStatus.Pending);
+    afterProcessingStatus(PromiseStatus.Pending);
+  }
+
+  private resetStatus(): [ko.Observable<PromiseStatus>, ko.Observable<PromiseStatus>] {
+    return [ko.observable(PromiseStatus.Uninitialized), ko.observable(PromiseStatus.Uninitialized)];
   }
 
   private updateStatus(customPromiseName: string, newStatus: PromiseStatus): void {
@@ -239,7 +245,7 @@ export class PromiseBatch {
   }
 
   private isCustomPromiseReset(customPromiseName: string): boolean {
-    return this.customPromiseHasResponse(customPromiseName) && this.observeStatus(customPromiseName)?.promiseStatus === PromiseStatus.Pending;
+    return this.customPromiseHasResponse(customPromiseName) && this.observeStatus(customPromiseName)?.promiseStatus === PromiseStatus.Uninitialized;
   }
 
   private shouldSaveResponse(customPromiseName: string): boolean {
@@ -319,11 +325,28 @@ export class PromiseBatch {
     return this.getCustomPromiseData(nameOrCustomPromise).customPromise as ICustomPromise<T>;
   }
 
+  private isStatusSettled(status: PromiseStatus): boolean {
+    return ![PromiseStatus.Uninitialized, PromiseStatus.Pending].includes(status);
+  }
+
+  private async isCustomPromiseCompleted<T>(customPromise: ICustomPromise<T>): Promise<boolean> {
+    const [promiseStatus] = this.getCustomPromiseData(customPromise.name).status;
+    const checkIsCustomPromiseCompleted: () => boolean = () => this.isStatusSettled(promiseStatus());
+    if (checkIsCustomPromiseCompleted()) {
+      return true;
+    }
+    return new Promise<boolean>(resolve => ko.pureComputed(checkIsCustomPromiseCompleted).subscribe(completed => completed && resolve(completed)));
+  }
+
   private async execStatefulPromise<T>(customPromise: ICustomPromise<T>): Promise<IStatefulResponse<T | undefined>> {
-    if (customPromise?.cached && this.observeStatus(customPromise)?.promiseStatus === PromiseStatus.Fulfilled) {
-      return { status: PromiseStatus.Fulfilled, value: this.getCachedResponse<T>(customPromise.name) };
+    if (customPromise?.cached && this.observeStatus(customPromise)?.promiseStatus !== PromiseStatus.Uninitialized) {
+      await this.isCustomPromiseCompleted(customPromise);
+    }
+    if (this.observeStatus(customPromise)?.promiseStatus === PromiseStatus.Fulfilled) {
+      return { status: PromiseStatus.Fulfilled, value: customPromise?.cached ? this.getCachedResponse<T>(customPromise.name) : undefined };
     }
     try {
+      this.initStatus(customPromise);
       return this.processFulfillment<T>(customPromise, await customPromise.function.call(customPromise.thisArg, ...(customPromise?.args ?? [])));
     } catch (error) {
       return this.processRejection<T>(customPromise, error);

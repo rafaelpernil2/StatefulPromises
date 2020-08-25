@@ -1,5 +1,6 @@
 export enum PromiseStatus {
   Pending,
   Fulfilled,
-  Rejected
+  Rejected,
+  Uninitialized
 }
