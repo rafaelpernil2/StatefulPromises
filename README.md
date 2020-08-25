@@ -57,7 +57,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to custom promise status at any time with [observeStatus](#observestatusnameorcustompromise-string--icustompromiseunknown).
 
-* Automated Test Suite: 72 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
+* Automated Test Suite: 79 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 
@@ -122,6 +122,14 @@ const customPromise: ICustomPromise<number> = {
 
 Determines if future executions of this custom promise return a value cached in the first execution or `undefined`.
 When this value is not specified, it always returns `undefined` in future executions.
+
+##### Important note:
+
+> If a cached custom promise is still being executed (pending state), posterior calls will wait until this execution resolves, without calling [function](#functionargs-any-promiseliket).
+>
+> When this execution resolves, it can be fulfilled or rejected:
+> * On fulfillment, the response is cached and returned in all posterior executions
+> * On rejection, no value is cached and [function](#functionargs-any-promiseliket) will be called again in the next execution.
 
 Default behaviour:
 ```typescript

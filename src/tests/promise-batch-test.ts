@@ -376,6 +376,33 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
     });
   });
+  context('given a promise list with alternating responses was previously added and .all is called more than once', () => {
+    it('the result of the first execution is kept', async () => {
+      const pb = new PromiseBatch();
+      const cpl: ICustomPromise<unknown>[] = [
+        {
+          name: 'ExternalAPI2',
+          function: TestUtil.buildFixedTimePromise(0)
+        },
+        {
+          name: 'LoadJSON',
+          function: TestUtil.buildFixedTimePromise(0)
+        }
+      ];
+      pb.addList(cpl);
+      const firstResult = await pb.all(3);
+      cpl[0].args = [{ test: 'TEST' }];
+      await pb.all(3);
+      await pb.all(3);
+      const nthResult = await pb.all(3);
+      const expectedRes = {
+        ExternalAPI2: TestUtil.NO_INPUT_PROVIDED,
+        LoadJSON: TestUtil.NO_INPUT_PROVIDED
+      };
+      expect(firstResult).to.eql(expectedRes);
+      expect(nthResult).to.eql(expectedRes);
+    });
+  });
 });
 
 describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
@@ -600,6 +627,33 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
       expect(result1).to.eql(result2);
       expect(pb1.getBatchResponse()).to.eql(pb2.getBatchResponse());
       expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
+    });
+  });
+  context('given a promise list with alternating responses was previously added and .allSettled is called more than once', () => {
+    it('the result of the first execution is kept', async () => {
+      const pb = new PromiseBatch();
+      const cpl: ICustomPromise<unknown>[] = [
+        {
+          name: 'ExternalAPI2',
+          function: TestUtil.buildFixedTimePromise(0)
+        },
+        {
+          name: 'LoadJSON',
+          function: TestUtil.buildFixedTimePromise(0)
+        }
+      ];
+      pb.addList(cpl);
+      const firstResult = await pb.allSettled(3);
+      cpl[0].args = [{ test: 'TEST' }];
+      await pb.allSettled(3);
+      await pb.allSettled(3);
+      const nthResult = await pb.allSettled(3);
+      const expectedRes = {
+        ExternalAPI2: TestUtil.NO_INPUT_PROVIDED,
+        LoadJSON: TestUtil.NO_INPUT_PROVIDED
+      };
+      expect(firstResult).to.eql(expectedRes);
+      expect(nthResult).to.eql(expectedRes);
     });
   });
 });
@@ -902,6 +956,67 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
       }
     });
   });
+  context('given a promise list with alternating responses was previously added and .retryRejected is called more than once', () => {
+    it('the result of the first execution is kept', async () => {
+      const pb = new PromiseBatch();
+      const util = new TestUtil();
+      const newCpl = [
+        {
+          name: 'Promise1',
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
+          args: [DUMMY_MESSAGES.RESOLVED],
+          cached: false,
+          validate: (data: string): boolean => {
+            return TestUtil.dummyValidator(data);
+          },
+          doneCallback: (data: string): string => {
+            return (data += '1');
+          },
+          catchCallback: (data: string): string => {
+            return (data += '2');
+          }
+        },
+        {
+          name: 'Promise2',
+          thisArg: util,
+          function: util.buildSingleParamFixedTimeCheckedPromise(0),
+          args: [DUMMY_MESSAGES.REJECTED],
+          cached: false,
+          validate: (data: string): boolean => {
+            return TestUtil.dummyValidator(data);
+          },
+          doneCallback: (data: string): string => {
+            return (data += '1');
+          },
+          catchCallback: (data: string): string => {
+            return (data += '2');
+          }
+        }
+      ];
+      pb.addList(newCpl);
+      let firstResult;
+      let nthResult;
+      try {
+        await pb.all(5);
+      } catch (error) {
+        // Fix the input
+        newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
+        firstResult = await pb.retryRejected().catch(reason => reason);
+        await pb.retryRejected().catch(reason => reason);
+        // Break again the input
+        newCpl[1].args = [DUMMY_MESSAGES.REJECTED];
+        await pb.retryRejected().catch(reason => reason);
+        nthResult = await pb.retryRejected().catch(reason => reason);
+      }
+      const expectedRes = {
+        Promise1: `${DUMMY_MESSAGES.RESOLVED}1`,
+        Promise2: `${DUMMY_MESSAGES.RESOLVED}1`
+      };
+      expect(firstResult).to.eql(expectedRes);
+      expect(nthResult).to.eql(expectedRes);
+    });
+  });
 });
 
 describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)', () => {
@@ -930,6 +1045,15 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
   context('given nameOrCustomPromise is a customPromise not included in the PromiseBatch', () => {
     it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse', async () => {
       const pb = new PromiseBatch();
+      const result = await pb.exec(examplePromise);
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
+      expect(result).to.eql([{ result: 'Resultd' }]);
+    });
+  });
+
+  context('given nameOrCustomPromise is a customPromise included in the batch', () => {
+    it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse', async () => {
+      const pb = new PromiseBatch([examplePromise]);
       const result = await pb.exec(examplePromise);
       expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
       expect(result).to.eql([{ result: 'Resultd' }]);
@@ -1253,7 +1377,7 @@ describe('PromiseBatch.getStatusList()', () => {
     it('returns an empty object', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
-      expect(pb.getStatusList()).to.eql({ [examplePromise.name]: { promiseStatus: PromiseStatus.Pending, afterProcessingStatus: PromiseStatus.Pending } });
+      expect(pb.getStatusList()).to.eql({ [examplePromise.name]: { promiseStatus: PromiseStatus.Uninitialized, afterProcessingStatus: PromiseStatus.Uninitialized } });
     });
   });
   context('given some custom promises are added and executed', () => {
@@ -1262,8 +1386,8 @@ describe('PromiseBatch.getStatusList()', () => {
       pb.add(examplePromise);
       await pb.all();
       expect(pb.getStatusList()).to.contain.keys([examplePromise.name]);
-      expect(pb.getStatusList()[examplePromise.name].promiseStatus).to.not.eql(PromiseStatus.Pending);
-      expect(pb.getStatusList()[examplePromise.name].afterProcessingStatus).to.not.eql(PromiseStatus.Pending);
+      expect(pb.getStatusList()[examplePromise.name].promiseStatus).to.not.eql(PromiseStatus.Uninitialized);
+      expect(pb.getStatusList()[examplePromise.name].afterProcessingStatus).to.not.eql(PromiseStatus.Uninitialized);
     });
   });
 });
@@ -1388,7 +1512,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
       pb.resetPromise(promiseName);
       pb.resetPromise(customPromise);
       Object.keys(pb.getStatusList()).forEach(key => {
-        expect(pb.observeStatus(key).promiseStatus).to.equal(PromiseStatus.Pending);
+        expect(pb.observeStatus(key).promiseStatus).to.equal(PromiseStatus.Uninitialized);
       });
     });
   });
@@ -1413,7 +1537,103 @@ describe('PromiseBatch.reset()', () => {
       await call;
       pb.reset();
       expect(pb.getBatchResponse()).to.eql({});
-      expect(pb.getStatusList()).to.eql({ [examplePromiseList[0].name]: { promiseStatus: PromiseStatus.Pending, afterProcessingStatus: PromiseStatus.Pending } });
+      expect(pb.getStatusList()).to.eql({ [examplePromiseList[0].name]: { promiseStatus: PromiseStatus.Uninitialized, afterProcessingStatus: PromiseStatus.Uninitialized } });
+    });
+  });
+});
+
+describe('PromiseBatch Cache behaviour: Activated when a custom promise has its cached property as true and only valid for exec method', () => {
+  context('given a custom promise with its cached property unset (or false) is executed more than one time using "exec" ', () => {
+    it('returns undefined in subsequent executions', async () => {
+      const pb = new PromiseBatch();
+      const cp1: ICustomPromise<string> = {
+        name: SIMPLE_TEST,
+        function: () => Promise.resolve('Test')
+      };
+      const firstResult = await pb.exec(cp1);
+      await pb.exec(cp1);
+      const nthResult = await pb.exec(cp1);
+      expect(firstResult).to.not.eql(undefined);
+      expect(nthResult).to.eql(undefined);
+    });
+  });
+
+  context('given a custom promise with its cached property as true is executed more than one time using "exec" ', () => {
+    it('returns the first result in subsequent executions and does not call its function property until the first call is resolved', async () => {
+      const pb = new PromiseBatch();
+      const expectedResult = 'Test';
+      const time = 100;
+      const nIter = 50;
+      let execCounter = 0;
+      const cp1: ICustomPromise<string> = {
+        name: SIMPLE_TEST,
+        cached: true,
+        function: () => {
+          execCounter++;
+          return new Promise<string>(resolve => setTimeout(() => resolve(expectedResult), time));
+        }
+      };
+
+      const tFirst0 = process.hrtime();
+
+      const firstResult = pb.exec(cp1);
+      for (let index = 0; index < nIter; index++) {
+        await pb.exec(cp1);
+      }
+      const nthResult = await pb.exec(cp1);
+      expect(await firstResult).to.eql(expectedResult);
+
+      const tFirst1 = process.hrtime(tFirst0);
+
+      expect(execCounter).to.eql(1);
+      expect(nthResult).to.eql(expectedResult);
+      // The elapesed time without cache should be "(nIter+2)*time", but with cache, it should be only "time"
+      expect(calcTotalTime(tFirst1) / 1e6).to.below(time * (nIter + 2));
+    });
+  });
+
+  context('given a custom promise with its cached property as true is executed more than one time using "exec" and its execution status is rejected ', () => {
+    it('calls the function again in subsequent executions until it is resolved and then saves that value in cache', async () => {
+      const pb = new PromiseBatch();
+      const expectedResult = 'Test';
+      const time = 100;
+      const nIter = 10;
+      let execCounter = 0;
+      const cp1: ICustomPromise<string> = {
+        name: SIMPLE_TEST,
+        cached: true,
+        function: (isResolved: boolean) => {
+          execCounter++;
+          return new Promise<string>((resolve, reject) => setTimeout(() => (isResolved ? resolve(expectedResult) : reject(expectedResult)), time));
+        },
+        args: [false]
+      };
+
+      const tFirst0 = process.hrtime();
+
+      let firstResult;
+      const firstCall = pb.exec(cp1).catch(reason => (firstResult = reason));
+      for (let index = 0; index < Math.floor(nIter / 2); index++) {
+        await pb.exec(cp1).catch(reason => reason);
+      }
+      // Make it resolve
+      cp1.args = [true];
+      // It will only be executed one more time since the function now resolves
+      for (let index = 0; index < Math.floor(nIter / 2); index++) {
+        await pb.exec(cp1).catch(reason => reason);
+      }
+      const nthResult = await pb.exec(cp1);
+      await firstCall;
+
+      const tFirst1 = process.hrtime(tFirst0);
+
+      expect(firstResult).to.eql(expectedResult);
+      expect(execCounter).to.eql(Math.floor(nIter / 2) + 2);
+      expect(nthResult).to.eql(expectedResult);
+      // The elapesed time without cache should be "(nIter+2)*time", but with cache, it should be only until the function fulfills,
+      // in this case "(niter/2 + 2) * time"
+      expect(calcTotalTime(tFirst1) / 1e6).to.above(time * (nIter / 2 + 2));
+      expect(calcTotalTime(tFirst1) / 1e6).to.below(time * (nIter + 2));
     });
   });
 });
