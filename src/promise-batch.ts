@@ -279,8 +279,9 @@ export class PromiseBatch {
     const promisesInProgress = [];
     const promiseNameList = Array.from(customPromiseMap.keys());
     const execLimit = this.checkConcurrencyLimit(promiseNameList, concurrencyLimit);
+    const awaitedPromiseNameList = promiseNameList.slice(execLimit);
     for (let index = 0; index < execLimit; index++) {
-      promisesInProgress.push(this.execAllRec(customPromiseMap, this.getCustomPromiseData(promiseNameList[index]).customPromise, promiseNameList.slice(execLimit)));
+      promisesInProgress.push(this.execAllRec(customPromiseMap, this.getCustomPromiseData(promiseNameList[index]).customPromise, awaitedPromiseNameList));
     }
     for (const promise of promisesInProgress) {
       await promise;
