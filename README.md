@@ -1,6 +1,7 @@
 # StatefulPromises
 
 [![Actions Status](https://github.com/rafaelpernil2/StatefulPromises/workflows/ci/badge.svg)](https://github.com/rafaelpernil2/StatefulPromises/actions)
+[![Coverage Status](https://coveralls.io/repos/github/rafaelpernil2/StatefulPromises/badge.svg?branch=master)](https://coveralls.io/github/rafaelpernil2/StatefulPromises?branch=master)
 [![BCH compliance](https://bettercodehub.com/edge/badge/rafaelpernil2/StatefulPromises?branch=master)](https://bettercodehub.com/)
 [![npm version](https://badge.fury.io/js/stateful-promises.svg)](https://badge.fury.io/js/stateful-promises)
 [![](https://badgen.net/badge/icon/TypeScript?icon=typescript&label)]()
