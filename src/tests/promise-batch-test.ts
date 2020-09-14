@@ -1633,7 +1633,6 @@ describe('PromiseBatch Cache behaviour: Activated when a custom promise has its 
 
       expect(execCounter).to.eql(1);
       expect(nthResult).to.eql(expectedResult);
-      // The elapesed time without cache should be "(nIter+2)*time", but with cache, it should be only "time"
       expect(calcTotalTime(tFirst1) / 1e6).to.below(time * (nIter + 2));
     });
   });

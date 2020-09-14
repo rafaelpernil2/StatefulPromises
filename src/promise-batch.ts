@@ -310,7 +310,7 @@ export class PromiseBatch {
       await this.isCustomPromiseCompleted(customPromise);
     }
     if (this.observeStatus(customPromise).promiseStatus === PromiseStatus.Fulfilled) {
-      return { status: PromiseStatus.Fulfilled, value: customPromise.cached ? this.getCustomPromiseData<T>(customPromise.name).cache : undefined };
+      return { status: PromiseStatus.Fulfilled, value: this.getCustomPromiseData<T>(customPromise.name).cache };
     }
     try {
       this.initStatus(customPromise);
@@ -323,7 +323,7 @@ export class PromiseBatch {
   private execCallbacks<T>(customPromise: ICustomPromise<T>, statefulResponse: IStatefulResponse<T>): void {
     this.updateStatus(customPromise.name, statefulResponse.status);
     const callbackNameByStatus = STATUS_CALLBACK_MAP[statefulResponse.status];
-    const hasDoneOrCatch = this.isDoneOrCatch(callbackNameByStatus) && Boolean(customPromise[callbackNameByStatus]);
+    const hasDoneOrCatch = this.hasDoneOrCatch(customPromise, callbackNameByStatus);
     if (!callbackNameByStatus || !(hasDoneOrCatch || customPromise.finallyCallback)) {
       return;
     }
@@ -336,8 +336,8 @@ export class PromiseBatch {
     this.notifyAsFinished(customPromise.name);
   }
 
-  private isDoneOrCatch<T>(callback?: Partial<keyof ICustomPromise<T>>): callback is 'doneCallback' | 'catchCallback' {
-    return callback === 'doneCallback' || callback === 'catchCallback';
+  private hasDoneOrCatch<T>(customPromise: ICustomPromise<T>, callback?: Partial<keyof ICustomPromise<T>>): boolean {
+    return (callback === 'doneCallback' || callback === 'catchCallback') && Boolean(customPromise[callback]);
   }
 
   private execValidate<T>(customPromise: ICustomPromise<T>, statefulResponse: IStatefulResponse<T>): void {
