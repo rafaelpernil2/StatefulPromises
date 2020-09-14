@@ -1,6 +1,7 @@
 # StatefulPromises
 
 [![Actions Status](https://github.com/rafaelpernil2/StatefulPromises/workflows/ci/badge.svg)](https://github.com/rafaelpernil2/StatefulPromises/actions)
+[![Coverage Status](https://coveralls.io/repos/github/rafaelpernil2/StatefulPromises/badge.svg?branch=master)](https://coveralls.io/github/rafaelpernil2/StatefulPromises?branch=master)
 [![BCH compliance](https://bettercodehub.com/edge/badge/rafaelpernil2/StatefulPromises?branch=master)](https://bettercodehub.com/)
 [![npm version](https://badge.fury.io/js/stateful-promises.svg)](https://badge.fury.io/js/stateful-promises)
 [![](https://badgen.net/badge/icon/TypeScript?icon=typescript&label)]()
@@ -57,7 +58,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to custom promise status at any time with [observeStatus](#observestatusnameorcustompromise-string--icustompromiseunknown).
 
-* Automated Test Suite: 79 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
+* Automated Test Suite: 82 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 

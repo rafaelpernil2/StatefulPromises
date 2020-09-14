@@ -1,5 +1,5 @@
 import { PromiseStatus } from './promise-status';
 export type IStatefulResponse<T> = {
-  status?: PromiseStatus;
+  status: PromiseStatus;
   value: T;
 };
