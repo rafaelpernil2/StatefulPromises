@@ -30,6 +30,10 @@ const examplePromise: ICustomPromise<object[]> = {
     const res = ((reason[0] as Record<string, unknown>).result += 'c');
     return [{ result: res }];
   },
+  finallyCallback: reason => {
+    const res = ((reason[0] as Record<string, unknown>).result += 'f');
+    return [{ result: res }];
+  },
   args: [{ result: 'Result' }],
   cached: true
 };
@@ -63,9 +67,32 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>)',
     });
   });
 });
-
+context('given customPromise was not added before and customPromise does NOT contain "name" property', () => {
+  it(`throws an error with "${ERROR_MSG.NO_PROMISE_NAME}"`, () => {
+    const pb = new PromiseBatch();
+    let result;
+    try {
+      pb.add(({ function: () => Promise.resolve('Test') } as unknown) as ICustomPromise<string>);
+    } catch (error) {
+      result = error;
+    }
+    expect(result.message).to.eql(ERROR_MSG.NO_PROMISE_NAME);
+  });
+});
 describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>)', () => {
-  context('given customPromise was not added before', () => {
+  context('given customPromise was not added before and customPromise does NOT contain "function" property', () => {
+    it(`throws an error with "${ERROR_MSG.NO_PROMISE_FUNCTION}"`, () => {
+      const pb = new PromiseBatch();
+      let result;
+      try {
+        pb.add({ name: 'Test' } as ICustomPromise<unknown>);
+      } catch (error) {
+        result = error;
+      }
+      expect(result.message).to.eql(ERROR_MSG.NO_PROMISE_FUNCTION);
+    });
+  });
+  context('given customPromise was not added before and customPromise contains "function" and "name" properties', () => {
     it('Inserts customPromise inside customPromiseList ', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
@@ -1037,8 +1064,8 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       const result = await pb.exec(examplePromise.name);
-      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
-      expect(result).to.eql([{ result: 'Resultd' }]);
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultdf' }] });
+      expect(result).to.eql([{ result: 'Resultdf' }]);
     });
   });
 
@@ -1046,8 +1073,8 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
     it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse', async () => {
       const pb = new PromiseBatch();
       const result = await pb.exec(examplePromise);
-      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
-      expect(result).to.eql([{ result: 'Resultd' }]);
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultdf' }] });
+      expect(result).to.eql([{ result: 'Resultdf' }]);
     });
   });
 
@@ -1055,8 +1082,27 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
     it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse', async () => {
       const pb = new PromiseBatch([examplePromise]);
       const result = await pb.exec(examplePromise);
-      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultd' }] });
-      expect(result).to.eql([{ result: 'Resultd' }]);
+      expect(pb.getBatchResponse()).to.eql({ GetSomething: [{ result: 'Resultdf' }] });
+      expect(result).to.eql([{ result: 'Resultdf' }]);
+    });
+  });
+
+  context('given nameOrCustomPromise is, contains finallyCallback and the promise fulfills', () => {
+    it('adds it, calls PromiseBatch.execStatefulPromise and stores the result at batchResponse returning a fulfilled promise', async () => {
+      const pb = new PromiseBatch();
+      const rejectedPromise: ICustomPromise<string> = {
+        name: 'Test2',
+        function: () => Promise.reject('Test'),
+        finallyCallback: () => 'TestFinal'
+      };
+      let result;
+      try {
+        await pb.exec(rejectedPromise);
+      } catch (error) {
+        result = error;
+      }
+      expect(pb.getBatchResponse()).to.eql({ Test2: 'TestFinal' });
+      expect(result).to.eql('TestFinal');
     });
   });
 
@@ -1412,7 +1458,7 @@ describe('PromiseBatch.getCacheList()', () => {
       const pb = new PromiseBatch();
       pb.add(examplePromise);
       await pb.all();
-      expect(pb.getCacheList()).to.eql({ [examplePromise.name]: [{ result: 'Resultd' }] });
+      expect(pb.getCacheList()).to.eql({ [examplePromise.name]: [{ result: 'Resultdf' }] });
     });
   });
   context('given some custom promise with cached property as true is executed and its function returns a rejected promise', () => {

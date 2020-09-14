@@ -1,0 +1,4 @@
+{
+    "check-coverage": true,
+    "include": ["src/promise-batch.ts", "src/types/**", "src/constants/**"]
+}
