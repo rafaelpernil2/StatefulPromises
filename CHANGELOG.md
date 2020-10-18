@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated README.md
 
+### Fixed
+- Fixed Github Actions pipelines "setup-node" step
+
 ## [3.2.1] - 2020-09-15
 ### Changed
 - Improved code quality for BetterCodeHub badge
