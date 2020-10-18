@@ -21,6 +21,7 @@ This project is an extension of [rafaelpernil2/ParallelPromises](https://github.
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Credits](#credits)
+- [Changelog](#changelog)
 - [License](#license)
 
 ## Installation
@@ -811,6 +812,9 @@ This NPM package has been developed by:
 **Rafael Pernil Bronchalo** - *Developer*
 
 * [github/rafaelpernil2](https://github.com/rafaelpernil2)
+
+## Changelog
+The format is based on Keep a Changelog, and this project adheres to Semantic Versioning - see the [CHANGELOG.md](CHANGELOG.md) file for details.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
