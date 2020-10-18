@@ -232,6 +232,30 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       };
       expect(result).to.eql(expectedRes);
     });
+    it('should take about "Math.floor(promiseAmount / concurrencyLimit) * time + remainder" to execute', async () => {
+      const concurrencyLimit = 8;
+      const promiseAmount = 10;
+      const time = 1; // In seconds
+      const listOfPromises: ICustomPromise<string>[] = [];
+      for (let num = 0; num < promiseAmount; num++) {
+        listOfPromises.push({
+          name: `Test${num}`,
+          function: TestUtil.buildFixedTimeNoParamPromise(time * 1e3, true)
+        });
+      }
+      const pb = new PromiseBatch();
+      pb.addList(listOfPromises);
+      const timeStart = process.hrtime();
+      await pb.all(concurrencyLimit);
+      const timeEnd = process.hrtime(timeStart);
+
+      const execTime = Math.floor(calcTotalTime(timeEnd) / 1e9);
+      const remainder = promiseAmount % concurrencyLimit > 0 ? time : 0;
+      const expectedTime = Math.floor(promiseAmount / concurrencyLimit) * time + remainder;
+
+      expect(concurrencyLimit).to.below(promiseAmount);
+      expect(execTime).to.eql(expectedTime);
+    });
   });
   context('given a promise list was previously added and a negative concurrencyLimit is passed', () => {
     it('throws an execption regarding the negative concurrencyLimit', async () => {
@@ -493,6 +517,30 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
         LoadJSON: TestUtil.NO_INPUT_PROVIDED
       };
       expect(result).to.eql(expectedRes);
+    });
+    it('should take about "Math.floor(promiseAmount / concurrencyLimit) * time + remainder" to execute', async () => {
+      const concurrencyLimit = 8;
+      const promiseAmount = 10;
+      const time = 1; // In seconds
+      const listOfPromises: ICustomPromise<string>[] = [];
+      for (let num = 0; num < promiseAmount; num++) {
+        listOfPromises.push({
+          name: `Test${num}`,
+          function: TestUtil.buildFixedTimeNoParamPromise(time * 1e3, true)
+        });
+      }
+      const pb = new PromiseBatch();
+      pb.addList(listOfPromises);
+      const timeStart = process.hrtime();
+      await pb.allSettled(concurrencyLimit);
+      const timeEnd = process.hrtime(timeStart);
+
+      const execTime = Math.floor(calcTotalTime(timeEnd) / 1e9);
+      const remainder = promiseAmount % concurrencyLimit > 0 ? time : 0;
+      const expectedTime = Math.floor(promiseAmount / concurrencyLimit) * time + remainder;
+
+      expect(concurrencyLimit).to.below(promiseAmount);
+      expect(execTime).to.eql(expectedTime);
     });
   });
   context('given a promise list was previously added and a negative concurrencyLimit is passed', () => {
@@ -981,6 +1029,37 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
       if (tFirst1 && tSecond1) {
         expect(calcTotalTime(tFirst1)).to.above(calcTotalTime(tSecond1));
       }
+    });
+
+    it('should take about "Math.floor(promiseAmount / concurrencyLimit) * time + remainder" to execute', async () => {
+      const concurrencyLimit = 8;
+      const promiseAmount = 10;
+      const time = 1; // In seconds
+      const listOfPromises: ICustomPromise<string>[] = [];
+      for (let num = 0; num < promiseAmount; num++) {
+        listOfPromises.push({
+          name: `Test${num}`,
+          function: TestUtil.buildFixedTimeNoParamPromise(time * 1e3, false)
+        });
+      }
+      const pb = new PromiseBatch();
+      pb.addList(listOfPromises);
+      let timeStart: [number, number] = [0, 0];
+      let timeEnd: [number, number] = [0, 0];
+      try {
+        await pb.all();
+      } catch (error) {
+        timeStart = process.hrtime();
+        await pb.retryRejected(concurrencyLimit).catch(reason => reason);
+        timeEnd = process.hrtime(timeStart);
+      }
+
+      const execTime = Math.floor(calcTotalTime(timeEnd) / 1e9);
+      const remainder = promiseAmount % concurrencyLimit > 0 ? time : 0;
+      const expectedTime = Math.floor(promiseAmount / concurrencyLimit) * time + remainder;
+
+      expect(concurrencyLimit).to.below(promiseAmount);
+      expect(execTime).to.eql(expectedTime);
     });
   });
   context('given a promise list with alternating responses was previously added and .retryRejected is called more than once', () => {
