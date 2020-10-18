@@ -7,9 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Setup Node.js for use with actions
-        uses: actions/setup-node@v1.1.0
+        uses: actions/setup-node@v1
         with:
-          version: '10.x'
+          node-version: '10.x'
       - run: npm install
       - run: npm run coverage
       - name: Coveralls GitHub Action

@@ -58,7 +58,7 @@ StatefulPromises solves that problem with some more thought put into it.
   * Independent [done](#donecallbackresponse-t-t) and [catch](#catchcallbackerror-any-any) callbacks.
   * Access to custom promise status at any time with [observeStatus](#observestatusnameorcustompromise-string--icustompromiseunknown).
 
-* Automated Test Suite: 82 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
+* Automated Test Suite: 85 automated tests ensure each commit works as intended through [Github Actions](https://github.com/rafaelpernil2/StatefulPromises/actions). Feel free to run the tests locally by executing `npm run test`.
 
 * Full type safety: Generic methods and interfaces like [ICustomPromise\<T\>](#icustompromiset) to type your Promises accordingly.
 
