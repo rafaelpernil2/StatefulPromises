@@ -6,11 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
-## [3.2.5] - 2020-10-18
+## [3.2.6] - 2021-04-01
+### Fixed
+- Added missing comparation links to new versions in CHANGELOG.md
+
+## [3.2.5] - 2021-04-01
 ### Fixed
 - Added missing update details to CHANGELOG.md
 
-## [3.2.4] - 2020-10-18
+## [3.2.4] - 2021-04-01
 ### Fixed
 - Upgraded y18n from 4.0.0 to 4.0.1 to solve a vulnerability 
 
@@ -260,6 +264,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.2.6]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.5...v3.2.6
+[3.2.5]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.4...v3.2.5
+[3.2.4]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.3...v3.2.4
 [3.2.3]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.2...v3.2.3
 [3.2.2]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.0...v3.2.1
