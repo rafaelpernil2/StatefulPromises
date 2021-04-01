@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.2.5] - 2020-10-18
+### Fixed
+- Added missing update details to CHANGELOG.md
+
+## [3.2.4] - 2020-10-18
+### Fixed
+- Upgraded y18n from 4.0.0 to 4.0.1 to solve a vulnerability 
+
 ## [3.2.3] - 2020-10-18
 ### Added
 - Changelog section in README
