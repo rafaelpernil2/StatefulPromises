@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.2.8] - 2021-06-11
+### Fixed
+- Upgraded glob-parent from 5.1.1 to 5.1.2 to solve a vulnerability
+
 ## [3.2.7] - 2021-05-11
 ### Fixed
 - Upgraded lodash from 4.17.19 to 4.17.21 to solve a vulnerability
@@ -268,6 +272,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.2.8]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.7...v3.2.8
 [3.2.7]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.6...v3.2.7
 [3.2.6]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.5...v3.2.6
 [3.2.5]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.4...v3.2.5
