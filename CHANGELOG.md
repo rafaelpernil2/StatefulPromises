@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.2.10] - 2021-08-12
+### Fixed
+- Improved GitHub Actions pipelines
+
 ## [3.2.9] - 2021-08-12
 ### Fixed
 - Upgraded path-parse from 1.0.6 to 1.0.7 to solve a vulnerability
@@ -276,6 +280,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.2.10]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.9...v3.2.10
 [3.2.9]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.8...v3.2.9
 [3.2.8]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.7...v3.2.8
 [3.2.7]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.6...v3.2.7
