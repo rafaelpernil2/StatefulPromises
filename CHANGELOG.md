@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.2.12] - 2022-02-12
+### Fixed
+- Upgraded ajv from 6.12.0 to 6.12.6 to solve a vulnerability
+
+## [3.2.11] - 2022-02-12
+### Fixed
+- Upgraded pathval from 1.1.0 to 1.1.1 to solve a vulnerability
+
 ## [3.2.10] - 2021-08-12
 ### Fixed
 - Improved GitHub Actions pipelines
@@ -280,6 +288,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.2.12]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.11...v3.2.12
+[3.2.11]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.10...v3.2.11
 [3.2.10]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.9...v3.2.10
 [3.2.9]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.8...v3.2.9
 [3.2.8]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.7...v3.2.8
