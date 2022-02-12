@@ -1,4 +1,3 @@
-import ko from 'knockout';
 import { ICustomPromise } from './types/i-custom-promise';
 import { PromiseStatus } from './types/promise-status';
 import { BatchMode } from './types/batch-mode';
@@ -7,6 +6,8 @@ import { IPromiseState } from './types/i-promise-state';
 import { ERROR_MSG } from './constants/error-messages';
 import { STATUS_CALLBACK_MAP } from './constants/promise-status-maps';
 import { ICustomPromiseData } from './types/i-custom-promise-map';
+import { CustomObservable } from './custom-observable/custom-observable';
+import { CustomObserver } from './custom-observable/custom-observer';
 
 export class PromiseBatch {
   private customPromiseDataMap: Map<string, ICustomPromiseData<unknown>>;
@@ -120,12 +121,20 @@ export class PromiseBatch {
    * Returns a promise that resolves once all promises are fulfilled or rejected, including "after processing" promise status (see finishPromise)
    */
   public async isBatchCompleted(): Promise<boolean> {
-    const checkIsBatchCompleted: () => boolean = () =>
-      Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => this.isStatusSettled(innerStatus())));
-    if (checkIsBatchCompleted()) {
-      return true;
-    }
-    return new Promise<boolean>(resolve => ko.pureComputed(checkIsBatchCompleted).subscribe(completed => completed && resolve(completed)));
+    return new Promise<boolean>(resolve => {
+      const checkIsBatchCompleted: () => void = () => {
+        const result = Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => this.isStatusSettled(innerStatus.getValue())));
+        if (result) {
+          resolve(result);
+        }
+      };
+      for (const { status } of this.customPromiseDataMap.values()) {
+        const [promiseStatus, afterProcessingStatus] = status;
+        promiseStatus.registerObserver(new CustomObserver<PromiseStatus>(status[0], checkIsBatchCompleted));
+        afterProcessingStatus.registerObserver(new CustomObserver<PromiseStatus>(status[1], checkIsBatchCompleted));
+      }
+      checkIsBatchCompleted();
+    });
   }
 
   /**
@@ -138,7 +147,7 @@ export class PromiseBatch {
    */
   public async isBatchFulfilled(): Promise<boolean> {
     await this.isBatchCompleted();
-    return Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => innerStatus() === PromiseStatus.Fulfilled));
+    return Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => innerStatus.getValue() === PromiseStatus.Fulfilled));
   }
 
   /**
@@ -183,7 +192,7 @@ export class PromiseBatch {
    * @param customPromiseName Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public observeStatus(nameOrCustomPromise: string | ICustomPromise<unknown>): IPromiseState {
-    const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(this.getCustomPromiseName(nameOrCustomPromise)).status.map(innerStatus => innerStatus());
+    const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(this.getCustomPromiseName(nameOrCustomPromise)).status.map(innerStatus => innerStatus.getValue());
     return { promiseStatus, afterProcessingStatus };
   }
 
@@ -201,22 +210,22 @@ export class PromiseBatch {
 
   private initStatus<T>({ name }: ICustomPromise<T>): void {
     const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(name).status;
-    promiseStatus(PromiseStatus.Pending);
-    afterProcessingStatus(PromiseStatus.Pending);
+    promiseStatus.setValue(PromiseStatus.Pending);
+    afterProcessingStatus.setValue(PromiseStatus.Pending);
   }
 
-  private resetStatus(): [ko.Observable<PromiseStatus>, ko.Observable<PromiseStatus>] {
-    return [ko.observable(PromiseStatus.Uninitialized), ko.observable(PromiseStatus.Uninitialized)];
+  private resetStatus(): [CustomObservable<PromiseStatus>, CustomObservable<PromiseStatus>] {
+    return [new CustomObservable<PromiseStatus>(PromiseStatus.Uninitialized), new CustomObservable<PromiseStatus>(PromiseStatus.Uninitialized)];
   }
 
   private updateStatus(customPromiseName: string, newStatus: PromiseStatus): void {
     const [promiseStatus] = this.getCustomPromiseData(customPromiseName).status;
-    promiseStatus(newStatus);
+    promiseStatus.setValue(newStatus);
   }
 
   private notifyAsFinished(customPromiseName: string): void {
     const [, afterProcessingStatus] = this.getCustomPromiseData(customPromiseName).status;
-    afterProcessingStatus(PromiseStatus.Fulfilled);
+    afterProcessingStatus.setValue(PromiseStatus.Fulfilled);
   }
 
   private addCachedResponse<T>({ name, cached }: ICustomPromise<T>, { status, value }: IStatefulResponse<T>): void {
@@ -298,11 +307,16 @@ export class PromiseBatch {
 
   private async isCustomPromiseCompleted<T>({ name }: ICustomPromise<T>): Promise<boolean> {
     const [promiseStatus] = this.getCustomPromiseData(name).status;
-    const checkIsCustomPromiseCompleted: () => boolean = () => this.isStatusSettled(promiseStatus());
-    if (checkIsCustomPromiseCompleted()) {
-      return true;
-    }
-    return new Promise<boolean>(resolve => ko.pureComputed(checkIsCustomPromiseCompleted).subscribe(completed => completed && resolve(completed)));
+    return new Promise<boolean>(resolve => {
+      const checkIsCustomPromiseCompleted: () => void = () => {
+        const result = this.isStatusSettled(promiseStatus.getValue());
+        if (result) {
+          resolve(result);
+        }
+      };
+      promiseStatus.registerObserver(new CustomObserver<PromiseStatus>(promiseStatus, checkIsCustomPromiseCompleted));
+      checkIsCustomPromiseCompleted();
+    });
   }
 
   private async execStatefulPromise<T>(customPromise: ICustomPromise<T>): Promise<IStatefulResponse<T | undefined>> {

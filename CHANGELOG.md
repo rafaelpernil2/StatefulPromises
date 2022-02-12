@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.3.0] - 2022-02-12
+### Changed
+- Removed Knockout dependency, now it has ZERO DEPENDENCIES :)
+- Bundle size is reduced by +80%!
+
 ## [3.2.13] - 2022-02-12
 ### Fixed
 - Upgraded ansi-regex from 5.0.0 to 5.0.1 to solve a vulnerability
@@ -292,6 +297,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.3.0]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.13...v3.3.0
 [3.2.13]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.12...v3.2.13
 [3.2.12]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.11...v3.2.12
 [3.2.11]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.10...v3.2.11

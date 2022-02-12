@@ -7,7 +7,7 @@
 [![](https://badgen.net/badge/icon/TypeScript?icon=typescript&label)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-StatefulPromises is an NPM package implemented in Typescript using Knockout 3.5 for working with promises statefully.
+StatefulPromises is an NPM package implemented in Typescript with zero dependencies for working with promises statefully.
 
 This project is an extension of [rafaelpernil2/ParallelPromises](https://github.com/rafaelpernil2/ParalellPromises).
 
