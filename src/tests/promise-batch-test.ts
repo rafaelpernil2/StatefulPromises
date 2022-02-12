@@ -1,6 +1,5 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import ko from 'knockout';
 import { expect } from 'chai';
 import 'mocha';
 import { ICustomPromise } from '../types/i-custom-promise';
@@ -1264,15 +1263,15 @@ describe('PromiseBatch.isBatchCompleted()', () => {
       // Create the child
       const child = cp.fork(path.join(__dirname, '../workers/batch-completed-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
       // Use an observable variable to refresh the value once the worker finishes
-      const isCompleted = ko.observable(false);
-      child.on('message', data => isCompleted(data));
+      let isCompleted = false;
+      child.on('message', (data: boolean) => (isCompleted = data));
       // Kill after timeout ms
       setTimeout(() => {
         child.kill();
       }, timeout);
       await TestUtil.setTimeout(timeout);
 
-      expect(isCompleted()).to.eq(false);
+      expect(isCompleted).to.eq(false);
     });
   });
 });
@@ -1390,15 +1389,15 @@ describe('PromiseBatch.isBatchFulfilled()', () => {
       // Create the child
       const child = cp.fork(path.join(__dirname, '../workers/batch-fulfilled-worker.ts'), [], { execArgv: ['-r', 'ts-node/register'] });
       // Use an observable variable to refresh the value once the worker finishes
-      const isFulfilled = ko.observable(false);
-      child.on('message', data => isFulfilled(data));
+      let isFulfilled = false;
+      child.on('message', (data: boolean) => (isFulfilled = data));
       // Kill after timeout ms
       setTimeout(() => {
         child.kill();
       }, timeout);
       await TestUtil.setTimeout(timeout);
 
-      expect(isFulfilled()).to.eq(false);
+      expect(isFulfilled).to.eq(false);
     });
   });
 });
