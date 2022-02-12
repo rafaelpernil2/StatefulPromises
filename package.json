@@ -1,10 +1,11 @@
 {
   "name": "stateful-promises",
-  "version": "3.2.12",
+  "version": "3.2.13",
   "description": "A project for creating stateful promise batches using Knockout.js",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "test": "mocha -r ts-node/register src/tests/**/*.ts --timeout 50000",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
     "build": "tsc",
@@ -33,22 +34,25 @@
     "knockout": "^3.5.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.11",
-    "@types/mocha": "^7.0.2",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
     "@types/node": "^12.12.7",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/eslint-plugin-tslint": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
-    "chai": "^4.2.0",
+    "chai": "^4.3.6",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
-    "mocha": "^7.1.2",
+    "mocha": "^9.2.0",
     "nyc": "^15.1.0",
     "prettier": "^1.19.1",
     "ts-node": "^8.10.1",
     "tslint": "^6.1.2",
     "typescript": "^3.8.3"
+  },
+  "resolutions": {
+    "ansi-regex": "5.0.1"
   },
   "files": [
     "lib/**/*"
