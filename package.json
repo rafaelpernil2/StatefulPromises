@@ -1,11 +1,11 @@
 {
   "name": "stateful-promises",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "A zero dependency project for creating stateful promise batches",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
+    "preinstall": "npx force-resolutions",
     "test": "mocha -r ts-node/register src/tests/**/*.ts --timeout 50000",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
     "build": "tsc",
