@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.3.3] - 2022-11-22
+### Changed
+- Removed BetterCodeHub due to closing at December 31st 2022
+- Removed "npx force-resolutions" preinstall script, it is no longer needed
+### Fixed
+- Upgraded minimatch from 3.0.4 to 3.1.2 to solve a vulnerability
+- Downgrade eslint to correct major version (6.X.X instead of 7.X.X). Bug introduced in release [3.2.13]
+
 ## [3.3.2] - 2022-03-29
 ### Fixed
 - Installation issue with force-resolutions
@@ -305,6 +313,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.3.3]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.2...v3.3.3
 [3.3.2]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.1...v3.3.2
 [3.3.1]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.0...v3.3.1
 [3.3.0]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.2.13...v3.3.0
