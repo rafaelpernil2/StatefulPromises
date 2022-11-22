@@ -1,11 +1,10 @@
 {
   "name": "stateful-promises",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "A zero dependency project for creating stateful promise batches",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "preinstall": "npx force-resolutions",
     "test": "mocha -r ts-node/register src/tests/**/*.ts --timeout 50000",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
     "build": "tsc",
@@ -37,7 +36,7 @@
     "@typescript-eslint/eslint-plugin-tslint": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "chai": "^4.3.6",
-    "eslint": "7.32.0",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
     "mocha": "^9.2.0",
@@ -46,9 +45,6 @@
     "ts-node": "^8.10.1",
     "tslint": "^6.1.2",
     "typescript": "^3.8.3"
-  },
-  "resolutions": {
-    "ansi-regex": "5.0.1"
   },
   "files": [
     "lib/**/*"
