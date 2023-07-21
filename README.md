@@ -35,7 +35,7 @@ npm install --save stateful-promises
 
 As described by MDN, a Promise has 3 possible states: Pending, Fulfilled and Rejected.
 
-[![](https://mdn.mozillademos.org/files/8633/promises.png)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+[![](https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Global_Objects/Promise/promises.png)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 But... We can't take a peek at a Promise status at any time without doing some hacking.
 
