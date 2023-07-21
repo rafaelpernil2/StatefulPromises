@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.3.5] - 2023-07-21
+### Fixed
+- Upgraded word-wrap from 1.2.3 to 1.2.4 to solve a vulnerability
+- Upgraded semver to solve a vulnerability
+
 ## [3.3.4] - 2023-01-06
 ### Fixed
 - Upgraded json5 from 2.1.3 to 2.2.3 to solve a vulnerability
@@ -317,6 +322,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.3.5]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.4...v3.3.5
 [3.3.4]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.3...v3.3.4
 [3.3.3]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.2...v3.3.3
 [3.3.2]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.1...v3.3.2
