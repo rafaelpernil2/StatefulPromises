@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [StatefulPromises]
 
+## [3.3.6] - 2023-11-13
+### Fixed
+- Upgraded @babel/traversefrom 7.11.5 to 7.23.2 to solve a vulnerability
+
 ## [3.3.5] - 2023-07-21
 ### Fixed
 - Upgraded word-wrap from 1.2.3 to 1.2.4 to solve a vulnerability
@@ -322,6 +326,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [StatefulPromises]: https://github.com/rafaelpernil2/StatefulPromises
+[3.3.6]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.5...v3.3.6
 [3.3.5]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.4...v3.3.5
 [3.3.4]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.3...v3.3.4
 [3.3.3]: https://github.com/rafaelpernil2/StatefulPromises/compare/v3.3.2...v3.3.3
