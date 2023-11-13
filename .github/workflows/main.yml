@@ -21,6 +21,7 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_OPTIONS: "--max_old_space_size=4096"
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v1.1.2
         with:
