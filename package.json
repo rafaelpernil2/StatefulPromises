@@ -1,6 +1,6 @@
 {
   "name": "stateful-promises",
-  "version": "3.3.6",
+  "version": "3.3.7",
   "description": "A zero dependency project for creating stateful promise batches",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
