@@ -41,7 +41,7 @@ export class PromiseBatch {
    * @param customPromiseList A custom promise list
    */
   public addList(customPromiseList: ICustomPromise<unknown>[]): void {
-    customPromiseList.forEach(customPromise => this.add(customPromise));
+    customPromiseList.forEach((customPromise) => this.add(customPromise));
   }
 
   /**
@@ -91,7 +91,7 @@ export class PromiseBatch {
    */
   public retryRejected(concurrencyLimit?: number): Promise<Record<string, unknown>> {
     const rejectedCustomPromiseNameList = this.getRejectedCustomPromiseNameList();
-    rejectedCustomPromiseNameList.forEach(customPromiseName => this.resetPromise(customPromiseName));
+    rejectedCustomPromiseNameList.forEach((customPromiseName) => this.resetPromise(customPromiseName));
     return this.doExecAll(rejectedCustomPromiseNameList, BatchMode.All, concurrencyLimit);
   }
 
@@ -121,9 +121,9 @@ export class PromiseBatch {
    * Returns a promise that resolves once all promises are fulfilled or rejected, including "after processing" promise status (see finishPromise)
    */
   public async isBatchCompleted(): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       const checkIsBatchCompleted: () => void = () => {
-        const result = Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => this.isStatusSettled(innerStatus.getValue())));
+        const result = Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every((innerStatus) => this.isStatusSettled(innerStatus.getValue())));
         if (result) {
           resolve(result);
         }
@@ -147,7 +147,7 @@ export class PromiseBatch {
    */
   public async isBatchFulfilled(): Promise<boolean> {
     await this.isBatchCompleted();
-    return Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every(innerStatus => innerStatus.getValue() === PromiseStatus.Fulfilled));
+    return Array.from(this.customPromiseDataMap.values()).every(({ status }) => status.every((innerStatus) => innerStatus.getValue() === PromiseStatus.Fulfilled));
   }
 
   /**
@@ -163,7 +163,7 @@ export class PromiseBatch {
    */
   public getStatusList(): Record<string, IPromiseState> {
     return Array.from(this.customPromiseDataMap.keys())
-      .map(key => ({ [key]: this.observeStatus(key) }))
+      .map((key) => ({ [key]: this.observeStatus(key) }))
       .reduce((statusMap, currentStatus) => ({ ...statusMap, ...currentStatus }), {});
   }
 
@@ -192,7 +192,7 @@ export class PromiseBatch {
    * @param customPromiseName Either the name of the custom promise or the custom promise whose "name" property will be used
    */
   public observeStatus(nameOrCustomPromise: string | ICustomPromise<unknown>): IPromiseState {
-    const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(this.getCustomPromiseName(nameOrCustomPromise)).status.map(innerStatus => innerStatus.getValue());
+    const [promiseStatus, afterProcessingStatus] = this.getCustomPromiseData(this.getCustomPromiseName(nameOrCustomPromise)).status.map((innerStatus) => innerStatus.getValue());
     return { promiseStatus, afterProcessingStatus };
   }
 
@@ -236,7 +236,7 @@ export class PromiseBatch {
   }
 
   private getRejectedCustomPromiseNameList(): string[] {
-    return Array.from(this.customPromiseDataMap.keys()).filter(customPromiseName => this.observeStatus(customPromiseName).promiseStatus === PromiseStatus.Rejected);
+    return Array.from(this.customPromiseDataMap.keys()).filter((customPromiseName) => this.observeStatus(customPromiseName).promiseStatus === PromiseStatus.Rejected);
   }
 
   private async doExec<T>({ name, ...restOfCustomPromise }: ICustomPromise<T>): Promise<IStatefulResponse<T | undefined>> {
@@ -307,7 +307,7 @@ export class PromiseBatch {
 
   private async isCustomPromiseCompleted<T>({ name }: ICustomPromise<T>): Promise<boolean> {
     const [promiseStatus] = this.getCustomPromiseData(name).status;
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       const checkIsCustomPromiseCompleted: () => void = () => {
         const result = this.isStatusSettled(promiseStatus.getValue());
         if (result) {
@@ -330,7 +330,7 @@ export class PromiseBatch {
       this.initStatus(customPromise);
       return this.processFulfillment<T>(customPromise, await customPromise.function.call(customPromise.thisArg, ...(customPromise.args ?? [])));
     } catch (error) {
-      return this.processRejection<T>(customPromise, error);
+      return this.processRejection<T>(customPromise, error as T);
     }
   }
 

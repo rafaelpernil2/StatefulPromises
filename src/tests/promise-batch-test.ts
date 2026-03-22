@@ -21,15 +21,15 @@ const examplePromise: ICustomPromise<object[]> = {
   validate: () => {
     return true;
   },
-  doneCallback: data => {
+  doneCallback: (data) => {
     const res = ((data[0] as Record<string, unknown>).result += 'd');
     return [{ result: res }];
   },
-  catchCallback: reason => {
+  catchCallback: (reason) => {
     const res = ((reason[0] as Record<string, unknown>).result += 'c');
     return [{ result: res }];
   },
-  finallyCallback: reason => {
+  finallyCallback: (reason) => {
     const res = ((reason[0] as Record<string, unknown>).result += 'f');
     return [{ result: res }];
   },
@@ -60,7 +60,7 @@ describe('new PromiseBatch(customPromiseList?: Array<ICustomPromise<unknown>>)',
   context('given a customPromiseList is provided', () => {
     it('sets status object as a new PromiseBatchStats and customPromiseList and batchResponse as empty object and adds each customPromise in the list', () => {
       const pb = new PromiseBatch(examplePromiseList);
-      expect(pb.getStatusList()).to.contain.keys(examplePromiseList.map(promise => promise.name));
+      expect(pb.getStatusList()).to.contain.keys(examplePromiseList.map((promise) => promise.name));
       expect(pb.getCustomPromiseList()).to.eql(examplePromiseList);
       expect(pb.getBatchResponse()).to.eql({});
     });
@@ -71,11 +71,11 @@ context('given customPromise was not added before and customPromise does NOT con
     const pb = new PromiseBatch();
     let result;
     try {
-      pb.add(({ function: () => Promise.resolve('Test') } as unknown) as ICustomPromise<string>);
+      pb.add({ function: () => Promise.resolve('Test') } as unknown as ICustomPromise<string>);
     } catch (error) {
       result = error;
     }
-    expect(result.message).to.eql(ERROR_MSG.NO_PROMISE_NAME);
+    expect((result as Error).message).to.eql(ERROR_MSG.NO_PROMISE_NAME);
   });
 });
 describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>)', () => {
@@ -88,7 +88,7 @@ describe('PromiseBatch.add<T>(customPromise: ICustomPromise<T>)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.eql(ERROR_MSG.NO_PROMISE_FUNCTION);
+      expect((result as Error).message).to.eql(ERROR_MSG.NO_PROMISE_FUNCTION);
     });
   });
   context('given customPromise was not added before and customPromise contains "function" and "name" properties', () => {
@@ -161,7 +161,7 @@ describe('PromiseBatch.addList(customPromiseList: Array<ICustomPromise<unknown>>
     it('Inserts each customPromise inside customPromiseList', () => {
       const pb = new PromiseBatch();
       pb.addList(examplePromiseList);
-      examplePromiseList.forEach(p => {
+      examplePromiseList.forEach((p) => {
         expect(pb.getCustomPromiseList()).to.contain(p);
       });
     });
@@ -193,7 +193,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given no promise list was previously added and a zero concurrencyLimit is passed', () => {
@@ -205,7 +205,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added and no concurrencyLimit is passed', () => {
@@ -266,7 +266,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added and a zero concurrencyLimit is passed', () => {
@@ -279,7 +279,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added, one promise rejects and a positive concurrencyLimit is passed', () => {
@@ -305,7 +305,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       };
 
       expect(pb.getBatchResponse()).to.eql(expectedRes);
-      expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
+      expect((result as Error).message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
     });
   });
   context('given a promise list with callbacks inside was previously added, one promise rejects and a positive concurrencyLimit is passed', () => {
@@ -360,7 +360,7 @@ describe('PromiseBatch.all(concurrencyLimit?: number)', () => {
       };
 
       expect(pb.getBatchResponse()).to.eql(expectedRes);
-      expect(result.message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
+      expect((result as Error).message).to.contain(ERROR_MSG.SOME_PROMISE_REJECTED);
     });
 
     it('the execution with a larger concurrencyLimit takes less time', async () => {
@@ -479,7 +479,7 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given no promise list was previously added and a zero concurrencyLimit is passed', () => {
@@ -491,7 +491,7 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added and no concurrencyLimit is passed', () => {
@@ -552,7 +552,7 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added and a zero concurrencyLimit is passed', () => {
@@ -565,7 +565,7 @@ describe('PromiseBatch.allSettled(concurrencyLimit?: number)', () => {
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error).message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a promise list was previously added, one promise rejects and a positive concurrencyLimit is passed', () => {
@@ -890,7 +890,7 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
           result = suberror;
         }
       }
-      expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error)?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a negative concurrencyLimit is passed', () => {
@@ -942,7 +942,7 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
           result = suberror;
         }
       }
-      expect(result?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
+      expect((result as Error)?.message).to.equal(ERROR_MSG.NO_NEGATIVE_CONC_LIMIT);
     });
   });
   context('given a set of promises with at least one rejected, with a concurrencyLimit specified', () => {
@@ -1049,7 +1049,7 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
         await pb.all();
       } catch (error) {
         timeStart = process.hrtime();
-        await pb.retryRejected(concurrencyLimit).catch(reason => reason);
+        await pb.retryRejected(concurrencyLimit).catch((reason) => reason);
         timeEnd = process.hrtime(timeStart);
       }
 
@@ -1107,12 +1107,12 @@ describe('PromiseBatch.retryRejected(concurrencyLimit?: number)', () => {
       } catch (error) {
         // Fix the input
         newCpl[1].args = [DUMMY_MESSAGES.RESOLVED];
-        firstResult = await pb.retryRejected().catch(reason => reason);
-        await pb.retryRejected().catch(reason => reason);
+        firstResult = await pb.retryRejected().catch((reason) => reason);
+        await pb.retryRejected().catch((reason) => reason);
         // Break again the input
         newCpl[1].args = [DUMMY_MESSAGES.REJECTED];
-        await pb.retryRejected().catch(reason => reason);
-        nthResult = await pb.retryRejected().catch(reason => reason);
+        await pb.retryRejected().catch((reason) => reason);
+        nthResult = await pb.retryRejected().catch((reason) => reason);
       }
       const expectedRes = {
         Promise1: `${DUMMY_MESSAGES.RESOLVED}1`,
@@ -1134,7 +1134,7 @@ describe('PromiseBatch.exec<T>(nameOrCustomPromise: string | ICustomPromise<T>)'
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
+      expect((result as Error).message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
     });
   });
   context('given nameOrCustomPromise is a promise name whose promise is included in the PromiseBatch', () => {
@@ -1423,7 +1423,7 @@ describe('PromiseBatch.finishPromise<T>(nameOrCustomPromise: string | ICustomPro
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
+      expect((result as Error).message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
     });
   });
   context('given a custom promise', () => {
@@ -1455,7 +1455,7 @@ describe('PromiseBatch.finishAllPromises()', () => {
       expect(pb.getStatusList()).to.not.eql({});
       pb.finishAllPromises();
       await call;
-      Object.keys(pb.getStatusList()).forEach(key => {
+      Object.keys(pb.getStatusList()).forEach((key) => {
         expect(pb.observeStatus(key).promiseStatus).to.equal(PromiseStatus.Fulfilled);
       });
     });
@@ -1491,7 +1491,7 @@ describe('PromiseBatch.observeStatus(nameOrCustomPromise: string | ICustomPromis
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
+      expect((result as Error).message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
     });
   });
 });
@@ -1598,7 +1598,7 @@ describe('PromiseBatch.getBatchResponse()', () => {
       const pb = new PromiseBatch();
       pb.addList(examplePromiseList);
       await pb.all();
-      expect(pb.getBatchResponse()).to.contain.keys(examplePromiseList.map(p => p.name));
+      expect(pb.getBatchResponse()).to.contain.keys(examplePromiseList.map((p) => p.name));
       expect(pb.getBatchResponse()).to.eql({
         [examplePromiseList[0].name]: { res: 'No input provided' },
         [examplePromiseList[1].name]: { res: 'No input provided' }
@@ -1620,8 +1620,8 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
       } catch (error) {
         result = error;
       }
-      expect(result.message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
-      Object.keys(pb.getStatusList()).forEach(key => {
+      expect((result as Error).message).to.contain(ERROR_MSG.INVALID_PROMISE_NAME);
+      Object.keys(pb.getStatusList()).forEach((key) => {
         expect(pb.getStatusList()[key].promiseStatus).to.equal(PromiseStatus.Fulfilled);
       });
     });
@@ -1635,7 +1635,7 @@ describe('PromiseBatch.resetPromise<T>(nameOrCustomPromise: string | ICustomProm
       await pb.all();
       pb.resetPromise(promiseName);
       pb.resetPromise(customPromise);
-      Object.keys(pb.getStatusList()).forEach(key => {
+      Object.keys(pb.getStatusList()).forEach((key) => {
         expect(pb.observeStatus(key).promiseStatus).to.equal(PromiseStatus.Uninitialized);
       });
     });
@@ -1694,7 +1694,7 @@ describe('PromiseBatch Cache behaviour: Activated when a custom promise has its 
         cached: true,
         function: () => {
           execCounter++;
-          return new Promise<string>(resolve => setTimeout(() => resolve(expectedResult), time));
+          return new Promise<string>((resolve) => setTimeout(() => resolve(expectedResult), time));
         }
       };
 
@@ -1735,15 +1735,15 @@ describe('PromiseBatch Cache behaviour: Activated when a custom promise has its 
       const tFirst0 = process.hrtime();
 
       let firstResult;
-      const firstCall = pb.exec(cp1).catch(reason => (firstResult = reason));
+      const firstCall = pb.exec(cp1).catch((reason) => (firstResult = reason));
       for (let index = 0; index < Math.floor(nIter / 2); index++) {
-        await pb.exec(cp1).catch(reason => reason);
+        await pb.exec(cp1).catch((reason) => reason);
       }
       // Make it resolve
       cp1.args = [true];
       // It will only be executed one more time since the function now resolves
       for (let index = 0; index < Math.floor(nIter / 2); index++) {
-        await pb.exec(cp1).catch(reason => reason);
+        await pb.exec(cp1).catch((reason) => reason);
       }
       const nthResult = await pb.exec(cp1);
       await firstCall;
