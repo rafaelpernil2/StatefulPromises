@@ -15,7 +15,7 @@ export class TestUtil {
   public static buildRandomTimePromise(timeMagnitude: number): (input: any[]) => Promise<any> {
     const time = Math.ceil(Math.random() * 10) * timeMagnitude;
     return (...input: any[]): Promise<any> => {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         setTimeout(() => {
           if (input[0]) {
             resolve(input);
@@ -43,7 +43,7 @@ export class TestUtil {
 
   public static buildFixedTimePromise(timeInMs: number): (input: any[]) => Promise<any> {
     return (...input: any[]): Promise<any> => {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         setTimeout(() => {
           if (input[0]) {
             resolve(JSON.parse(JSON.stringify(input)));
@@ -71,7 +71,7 @@ export class TestUtil {
 
   public static buildPassthroughPromise(): (input: any[]) => Promise<any> {
     return (...input: any[]): Promise<any> => {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         if (input[0]) {
           resolve(input);
         } else {
@@ -82,7 +82,7 @@ export class TestUtil {
   }
 
   public static setTimeout(timeInMs: number): Promise<void> {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, timeInMs);
@@ -122,7 +122,7 @@ export class TestUtil {
 
   public buildSingleParamFixedTimeUncheckedPromise(timeInMs: number): (input: string) => Promise<string> {
     return (input: string): Promise<string> => {
-      return new Promise<string>(resolve => {
+      return new Promise<string>((resolve) => {
         setTimeout(() => {
           resolve(input);
         }, timeInMs);
